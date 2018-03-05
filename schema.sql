@@ -1,8 +1,8 @@
 CREATE TABLE users(
     id serial PRIMARY KEY,
-    username character  varying(255) UNIQUE REQUIRED,
-    password character  varying(255) REQUIRED,
-    name character  varying(255) NOT NULL REQUIRED,
+    username character  varying(255) UNIQUE,
+    password character  varying(255),
+    name character  varying(255) NOT NULL,
     userPhoto character  varying(255)
 );
 
@@ -24,9 +24,9 @@ CREATE TABLE books(
 
 CREATE TABLE readBooks(
 id serial,
-userId serial REFERENCES users(id) REQUIRED,
-bookId serial REFERENCES books(id) REQUIRED,
-grade Integer REQUIRED,
+userId serial REFERENCES users(id),
+bookId serial REFERENCES books(id),
+grade Integer,
 comments text
 );
 
