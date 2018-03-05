@@ -1,0 +1,39 @@
+{
+  "name": "h1",
+  "version": "1.0.0",
+  "description": "Hópverkefni1",
+  "main": ".eslintrc.js",
+  "dependencies": {
+    "bcrypt": "^1.0.3",
+    "dotenv": "^5.0.1",
+    "express": "^4.16.2",
+    "express-session": "^1.15.6",
+    "heroku-client": "^3.0.6",
+    "jsonwebtoken": "^8.1.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "^3.0.1",
+    "pg": "^7.4.1",
+    "sql": "^0.78.0",
+    "validator": "^9.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^4.17.0",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.8.0"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "eslint": "eslint *.js **/*.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alli959/vef2_verk3.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alli959/vef2_verk3/issues"
+  },
+  "homepage": "https://github.com/alli959/vef2_verk3#readme"
+}
