@@ -5,7 +5,9 @@
   "main": ".eslintrc.js",
   "dependencies": {
     "bcrypt": "^1.0.3",
+    "convert-csv-to-json": "0.0.13",
     "csv": "^2.0.0",
+    "csvtojson": "^1.1.9",
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
