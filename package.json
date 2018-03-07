@@ -5,6 +5,7 @@
   "main": ".eslintrc.js",
   "dependencies": {
     "bcrypt": "^1.0.3",
+    "csv": "^2.0.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.2",
     "express-session": "^1.15.6",
@@ -12,6 +13,7 @@
     "jsonwebtoken": "^8.1.1",
     "passport": "^0.4.0",
     "passport-jwt": "^3.0.1",
+    "passport-local": "^1.0.0",
     "pg": "^7.4.1",
     "sql": "^0.78.0",
     "validator": "^9.4.1"
