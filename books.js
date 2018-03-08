@@ -26,15 +26,22 @@ async function query(q, values = []) {
 
 
 
+
 csv()
 .fromFile(csvFilePath)
 .on('json',(jsonObj)=>{
-    // combine csv header row and csv line to a json object
-    // jsonObj.a ==> 1 or 4
+  console.log(jsonObj.title);
 })
 .on('done',(error)=>{
     console.log('end')
 })
+
+
+
+
+
+
+
  
 
 
