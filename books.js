@@ -1,17 +1,17 @@
 require('dotenv').config();
+const express = require('express');
+const session = require('express-session');
 const bcrypt = require('bcrypt');
 const { Client } = require('pg');
 
-const csvFilePath = 'data/books.csv'
-const csv = require('csvtojson');
 
 const router = express.Router(); 
 
 const {
-  saveToGroups,
-  saveToBooks,
   fetchBooks
 } = require('./database')
+
+
 
 const connectionString = process.env.DATABASE_URL ||{
   user: 'postgres',
@@ -39,20 +39,13 @@ async function query(q, values = []) {
 
   
 
-csv()
-.fromFile(csvFilePath)
-.on('json',(jsonObj)=>{
-  saveToGroups(jsonObj.category);
-  saveToBooks(jsonObj);
-})
-.on('done',(error)=>{
-    console.log('end')
-})
+router.get('/', async (req,res) => {
+  const { id, author, description, isbn10, isbn13, published, pagecount, language, category } = req.body;
+  const read = await fetchBooks();
+  res.json(read);
+});
 
-
-router.get('/books', (req,res) => {
-
-})
+module.exports = router;
  
 
 

@@ -50,6 +50,7 @@ async function fetchBooks() {
 
   try {
     const result = await client.query('SELECT * FROM books');
+    console.log(result);
 
     const { rows } = result;
     return rows;
@@ -82,6 +83,6 @@ async function runQuery(query) {
 module.exports = {
     saveToGroups,
     saveToBooks,
-  fetchData,
+    fetchBooks,
   runQuery,
 };
