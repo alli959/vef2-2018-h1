@@ -18,7 +18,8 @@
     "passport-local": "^1.0.0",
     "pg": "^7.4.1",
     "sql": "^0.78.0",
-    "validator": "^9.4.1"
+    "validator": "^9.4.1",
+    "xss": "^0.3.7"
   },
   "devDependencies": {
     "eslint": "^4.17.0",

@@ -3,21 +3,16 @@ const express = require('express');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
 const { Client } = require('pg');
+const { fetchBooks } = require('./database');
+
+const router = express.Router();
 
 
-const router = express.Router(); 
-
-const {
-  fetchBooks
-} = require('./database')
-
-
-
-const connectionString = process.env.DATABASE_URL ||{
+const connectionString = process.env.DATABASE_URL || {
   user: 'postgres',
   host: 'localhost',
   database: 'h1',
-  port: '5432'
+  port: '5432',
 };
 
 async function query(q, values = []) {
@@ -37,16 +32,21 @@ async function query(q, values = []) {
   return result;
 }
 
-  
 
-router.get('/', async (req,res) => {
-  const { id, author, description, isbn10, isbn13, published, pagecount, language, category } = req.body;
+router.get('/', async (req, res) => {
+  const {
+    id,
+    author,
+    description,
+    isbn10,
+    isbn13,
+    published,
+    pagecount,
+    language,
+    category,
+  } = req.body;
   const read = await fetchBooks();
   res.json(read);
 });
 
 module.exports = router;
- 
-
-
-
