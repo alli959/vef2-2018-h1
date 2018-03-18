@@ -1,26 +1,31 @@
 const express = require('express');
+const { addBook } = require('./books-api');
 
 const router = express.Router();
 router.use(express.urlencoded({ extended: true }));
 
 router.get('/', async (req, res) => {
-  const {
-    id,
-    author,
-    description,
-    isbn10,
-    isbn13,
-    published,
-    pagecount,
-    language,
-    category,
-  } = req.body;
-  const read = await fetchBooks();
-  res.json(read);
+
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
+  const {
+    title,
+    isbn13,
+    author = '',
+    description = '',
+    category,
+    isbn10 = '',
+    published = '',
+    pagecount = 0,
+    language = '',
+  } = req.body;
 
+  const { status, data } = await addBook({
+    title, isbn13, author, description, category, isbn10, published, pagecount, language,
+  });
+
+  return res.status(status).json(data);
 });
 
 router.get('/:id', (req, res) => {

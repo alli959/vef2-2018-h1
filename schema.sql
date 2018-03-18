@@ -26,8 +26,8 @@ CREATE TABLE books(
 
 CREATE TABLE readBooks(
     id serial,
-    userId serial REFERENCES users(id),
-    bookId serial REFERENCES books(id),
+    userId Integer REFERENCES users(id),
+    bookId Integer REFERENCES books(id),
     grade Integer,
     comments text
 );
