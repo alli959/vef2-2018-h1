@@ -1,22 +1,23 @@
 const {
   getAllUsers,
   findByUsername,
+  findById,
   createUser,
 } = require('./users-db');
 const validator = require('validator');
 const xss = require('xss');
 
 /**
- * Get all users
+ * Validation for the registration inputs
  *
- * @returns {Promise} Promise representing the object containing all users
+ * @param {Object} user - User info to validate
+ * @param {String} user.username - Username of user
+ * @param {String} user.name - Name of user
+ * @param {String} user.password - Password of user
+ * @param {String} user.photo - URL to user's photo
+ *
+ * @returns {Promise} Promise representing a array of errors objects, empty if no errors
  */
-async function getAll() {
-  const output = await getAllUsers();
-
-  return output;
-}
-
 async function validateRegister({ username, name, password, photo } = {}) { // eslint-disable-line
   const errors = [];
 
@@ -42,6 +43,51 @@ async function validateRegister({ username, name, password, photo } = {}) { // e
   }
 
   return errors;
+}
+
+/**
+ * Validation for ID
+ *
+ * @param {int} id
+ *
+ * @returns {boolean} true if id is a Integer
+ */
+function validateId(id) {
+  if (!validator.isInt(id)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Get all users
+ *
+ * @returns {Promise} Promise representing the object containing all users
+ */
+async function getAll() {
+  const output = await getAllUsers();
+
+  return output;
+}
+
+/**
+ * Get one user by id
+ *
+ * @param {Int} id - id of the user to get
+ *
+ * @returns {Object} Promise representing the user object if exists
+ */
+async function getOneById(id) {
+  if (!validateId(id)) {
+    return ({ status: 400, data: { error: 'Invalid ID' } });
+  }
+
+  const data = await findById(id);
+
+  if (data.length > 0) {
+    return ({ status: 200, data: data[0] });
+  }
+  return ({ status: 404, data: { error: 'User was not found' } });
 }
 
 /**
@@ -71,10 +117,11 @@ async function register({ username, name, password, photo } = {}) { // eslint-di
 
   const output = await createUser(data);
 
-  return { status: 200, data: output };
+  return { status: 200, data: output[0] };
 }
 
 module.exports = {
   getAll,
+  getOneById,
   register,
 };
