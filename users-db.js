@@ -51,13 +51,11 @@ async function comparePasswords(password, hash) {
 
 async function findByUsername(username) {
   const client = new Client({ connectionString });
-  await client.connect();
-
   const query = 'SELECT * FROM users WHERE username = $1';
+  await client.connect();
 
   try {
     const result = await client.query(query, [username]);
-
     const { rows } = result;
     return rows;
   } catch (err) {
@@ -69,22 +67,27 @@ async function findByUsername(username) {
 }
 
 async function findById(id) {
-  const q = 'SELECT * FROM users WHERE id = $1';
+  const client = new Client({ connectionString });
+  const query = 'SELECT id, username, name, photo FROM users WHERE id = $1';
+  await client.connect();
 
-  const result = await query(q, [id]);
-
-  if (result.rowCount === 1) {
-    return result.rows[0];
+  try {
+    const result = await client.query(query, [id]);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
   }
-
-  return null;
 }
 
 async function createUser(data) {
   const client = new Client({ connectionString });
-  await client.connect();
   const query =
-    'INSERT INTO users (username, name, password, photo) VALUES ($1, $2, $3, $4) RETURNING username, name, photo';
+  'INSERT INTO users (username, name, password, photo) VALUES ($1, $2, $3, $4) RETURNING username, name, photo';
+  await client.connect();
 
   try {
     const {
@@ -96,7 +99,6 @@ async function createUser(data) {
 
     const hashedPassword = await bcrypt.hash(password, 11);
     const result = await client.query(query, [username, name, hashedPassword, photo]);
-
     const { rows } = result;
     return rows;
   } catch (err) {
