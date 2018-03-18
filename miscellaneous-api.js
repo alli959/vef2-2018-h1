@@ -23,4 +23,8 @@ router.post('/login', (req, res) => {
   res.send('heyo');
 });
 
+router.get('/categories', (req, res) => {
+
+});
+
 module.exports = router;
