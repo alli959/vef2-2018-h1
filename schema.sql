@@ -17,21 +17,17 @@ CREATE TABLE books(
     isbn13 Varchar(255),
     author Varchar(255),
     description text,
-    category Varchar(255) FOREIGN KEY REFERENCES groups(category)
+    category Varchar(255) REFERENCES groups(category),
     isbn10 Varchar(255),
     published Varchar(255),
     pagecount Integer,
-    language Varchar(2),
+    language Varchar(2)
 );
 
 CREATE TABLE readBooks(
     id serial,
-    userId serial FOREIGN KEY REFERENCES users(id),
-    bookId serial FOREIGN KEY REFERENCES books(id),
+    userId serial REFERENCES users(id),
+    bookId serial REFERENCES books(id),
     grade Integer,
     comments text
 );
-
-
-
-
