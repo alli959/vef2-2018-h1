@@ -1,8 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const books = require('./books');
+const books = require('./books-router');
 const users = require('./users-router');
-const miscellaneous = require('./miscellaneous-api');
+const miscellaneous = require('./miscellaneous-router');
 
 const app = express();
 
