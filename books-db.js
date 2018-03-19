@@ -124,12 +124,31 @@ async function getBookByIsBn13(isbn13) {
   }
 }
 
-async function fetchBooks() {
+
+async function getBookById(id) {
+  const client = new Client({ connectionString });
+  const query = 'SELECT * FROM books WHERE id = $1';
+  await client.connect();
+
+  try {
+    const data = await client.query(query, [id]);
+    const { rows } = data;
+    return rows;
+  } catch (err) {
+    console.info(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+
+async function fetchBooks(offset) {
   const client = new Client({ connectionString });
   await client.connect();
 
   try {
-    const result = await client.query('SELECT * FROM books');
+    const result = await client.query('SELECT * FROM books LIMIT 10 offset ($1)',[offset]);
     console.log(result);
 
     const { rows } = result;
@@ -169,4 +188,5 @@ module.exports = {
   getCategory,
   getCategories,
   addCategory,
+  getBookById,
 };

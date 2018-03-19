@@ -1,11 +1,17 @@
 const express = require('express');
-const { addBook } = require('./books-api');
+const {
+  addBook,
+  getBooks,
+  getBooksById,
+} = require('./books-api');
 
 const router = express.Router();
 router.use(express.urlencoded({ extended: true }));
 
 router.get('/', async (req, res) => {
-
+  const { offset } = req.query;
+  const data = await getBooks(offset);
+  return res.json(data);
 });
 
 router.post('/', async (req, res) => {
@@ -28,8 +34,11 @@ router.post('/', async (req, res) => {
   return res.status(status).json(data);
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const { id } = req.params;
+
+  const data = await getBooksById(id);
+  return res.json(data);
 });
 
 router.patch('/:id', (req, res) => {
