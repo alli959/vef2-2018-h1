@@ -3,14 +3,21 @@ const {
   addBook,
   getBooks,
   getBooksById,
+  searchBooks,
 } = require('./books-api');
 
 const router = express.Router();
 router.use(express.urlencoded({ extended: true }));
 
 router.get('/', async (req, res) => {
-  const { offset } = req.query;
-  const data = await getBooks(offset);
+  const { pepp } = req.query;
+  const data = await getBooks(pepp);
+  return res.json(data);
+});
+
+router.get('/', async (req, res) => {
+  const { search } = req.query;
+  const data = await searchBooks(search);
   return res.json(data);
 });
 
@@ -43,6 +50,7 @@ router.get('/:id', async (req, res) => {
 
 router.patch('/:id', (req, res) => {
   const { id } = req.params;
+
 });
 
 

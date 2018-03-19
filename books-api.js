@@ -5,6 +5,7 @@ const {
   getCategory,
   fetchBooks,
   getBookById,
+  search,
 } = require('./books-db');
 
 const validator = require('validator');
@@ -16,6 +17,15 @@ const xss = require('xss');
 //********************* */
 async function getBooks(offset){
   const data = await fetchBooks(offset);
+  return data;
+}
+
+//***********************/
+//********TODO validator********** */
+//********************* */
+async function searchBooks(string){
+  const data = await search(string);
+  console.info(data);
   return data;
 }
 
@@ -144,4 +154,5 @@ module.exports = {
   addBook,
   getBooks,
   getBooksById,
+  searchBooks,
 };

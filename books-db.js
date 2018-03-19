@@ -90,6 +90,24 @@ async function saveBook(data) {
   }
 }
 
+async function search(string) {
+  const client = new Client({ connectionString });
+  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1))';
+  await client.connect();
+  try {
+    const data = await client.query(query, [string]);
+    const { rows } = data;
+    return rows;
+  } catch (err) {
+    console.info(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+
+
+}
+
 async function getBookByTitle(title) {
   const client = new Client({ connectionString });
   const query = 'SELECT * FROM books WHERE title = $1';
@@ -149,7 +167,6 @@ async function fetchBooks(offset) {
 
   try {
     const result = await client.query('SELECT * FROM books LIMIT 10 offset ($1)',[offset]);
-    console.log(result);
 
     const { rows } = result;
     return rows;
@@ -189,4 +206,5 @@ module.exports = {
   getCategories,
   addCategory,
   getBookById,
+  search,
 };
