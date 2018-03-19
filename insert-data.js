@@ -61,9 +61,9 @@ csv()
     if (existingCategories.indexOf(category) < 0) {
       existingCategories.push(category);
       await addCategory(xss(category));
-      console.info('Finished createing categories');
     }
   })
   .on('done', () => {
+    console.info('Finished creating categories');
     setTimeout(readJson, 2000);
   });
