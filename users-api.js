@@ -3,6 +3,7 @@ const {
   findByUsername,
   findById,
   createUser,
+  loginUser,
 } = require('./users-db');
 const validator = require('validator');
 const xss = require('xss');
@@ -120,8 +121,29 @@ async function register({ username, name, password, photo } = {}) { // eslint-di
   return { status: 200, data: output[0] };
 }
 
+/**
+ * Logs in a user
+ *
+ * @param {Object} user - Object representing the user
+ * @param {String} user.username- User's username
+ * @param {String} user.password- User's password
+ *
+ * @returns {Token}
+ */
+async function login(user) {
+  const { username, password } = user;
+
+  if (user.length > 0) {
+    const data = await loginUser(username, password);
+    console.info(data);
+  }
+
+  return { status: 200, data: user[0] };
+}
+
 module.exports = {
   getAll,
   getOneById,
   register,
+  login,
 };

@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const passport = require('passport');
+const { Strategy } = require('passport-local');
 const books = require('./books-router');
 const users = require('./users-router');
 const miscellaneous = require('./miscellaneous-router');

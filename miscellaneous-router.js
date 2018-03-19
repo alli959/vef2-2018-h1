@@ -1,5 +1,5 @@
 const express = require('express');
-const { register } = require('./users-api');
+const { register, login } = require('./users-api');
 
 const router = express.Router();
 router.use(express.urlencoded({ extended: true }));
@@ -19,8 +19,12 @@ router.post('/register', async (req, res) => {
   return res.status(status).json(data);
 });
 
-router.post('/login', (req, res) => {
-  res.send('heyo');
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const user = { username, password };
+  const { status, data } = await login(user);
+
+  return res.status(status).json(data);
 });
 
 router.get('/categories', (req, res) => {
