@@ -71,7 +71,7 @@ async function findById(id) {
   try {
     const result = await client.query(query, [id]);
     const { rows } = result;
-    return rows;
+    return rows[0];
   } catch (err) {
     console.error(err);
     throw err;

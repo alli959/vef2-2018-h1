@@ -85,8 +85,8 @@ async function getOneById(id) {
 
   const data = await findById(id);
 
-  if (data.length > 0) {
-    return ({ status: 200, data: data[0] });
+  if (data) {
+    return ({ status: 200, data });
   }
   return ({ status: 404, data: { error: 'User was not found' } });
 }

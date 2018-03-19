@@ -5,7 +5,6 @@
   "main": ".eslintrc.js",
   "dependencies": {
     "bcrypt": "^1.0.3",
-    "convert-csv-to-json": "0.0.13",
     "cookie-parser": "^1.4.3",
     "csv": "^2.0.0",
     "csvtojson": "^1.1.9",
@@ -18,7 +17,6 @@
     "passport-jwt": "^3.0.1",
     "passport-local": "^1.0.0",
     "pg": "^7.4.1",
-    "sql": "^0.78.0",
     "validator": "^9.4.1",
     "xss": "^0.3.7"
   },
