@@ -3,26 +3,6 @@ const { Client } = require('pg');
 
 const connectionString = process.env.DATABASE_URL;
 
-/*
-
-async function query(q, values = []) {
-  const client = new Client({ connectionString });
-  await client.connect();
-
-  let result;
-
-  try {
-    result = await client.query(q, values);
-  } catch (err) {
-    throw err;
-  } finally {
-    await client.end();
-  }
-
-  return result;
-}
-
-*/
 
 async function getAllUsers() {
   const client = new Client({ connectionString });
@@ -51,7 +31,7 @@ async function comparePasswords(password, hash) {
 
 async function findByUsername(username) {
   const client = new Client({ connectionString });
-  const query = 'SELECT * FROM users WHERE username = $1';
+  const query = 'SELECT id, username, name, photo FROM users WHERE username = $1';
   await client.connect();
 
   try {

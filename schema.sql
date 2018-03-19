@@ -8,30 +8,26 @@ CREATE TABLE users(
 
 CREATE TABLE groups(
     id serial PRIMARY KEY,
-    category Varchar(255) UNIQUE
+    category Varchar(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE books(
     id serial PRIMARY KEY,
     title Varchar(255) NOT NULL UNIQUE,
+    isbn13 Varchar(255),
     author Varchar(255),
     description text,
+    category Varchar(255) REFERENCES groups(category),
     isbn10 Varchar(255),
-    isbn13 Varchar(255),
     published Varchar(255),
-    pagecount text,
-    language Varchar(255),
-    category Varchar(255) references groups(category)
+    pagecount Integer,
+    language Varchar(2)
 );
 
 CREATE TABLE readBooks(
     id serial,
-    userId serial FOREIGN KEY REFERENCES users(id),
-    bookId serial FOREIGN KEY REFERENCES books(id),
+    userId Integer REFERENCES users(id),
+    bookId Integer REFERENCES books(id),
     grade Integer,
     comments text
 );
-
-
-
-
