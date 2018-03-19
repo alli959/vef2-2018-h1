@@ -1,24 +1,7 @@
+require('dotenv').config();
 const { Client } = require('pg');
 
 const connectionString = process.env.DATABASE_URL;
-
-async function saveToGroups(data) {
-  const client = new Client({ connectionString });
-
-  await client.connect();
-
-  const query = 'INSERT INTO groups(category) VALUES($1)';
-  const values = [data];
-
-  try {
-    await client.query(query, values);
-  } catch (err) {
-    console.error('Error inserting data');
-    throw err;
-  } finally {
-    await client.end();
-  }
-}
 
 async function getCategory(category) {
   const client = new Client({ connectionString });
@@ -37,7 +20,41 @@ async function getCategory(category) {
   }
 }
 
-async function saveBook(data) {
+async function getCategories() {
+  const client = new Client({ connectionString });
+  const query = 'SELECT * FROM categories;';
+  await client.connect();
+
+  try {
+    const data = client.query(query);
+    const { rows } = data;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function addCategory(category) {
+  const client = new Client({ connectionString });
+  const query = 'INSERT INTO groups (category) VALUES ($1) RETURNING *';
+  await client.connect();
+
+  try {
+    const data = await client.query(query, [category]);
+    const { rows } = data;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function asyncSaveBook(data) {
   const client = new Client({ connectionString });
   const {
     title,
@@ -75,6 +92,42 @@ async function saveBook(data) {
     throw err;
   } finally {
     await client.end();
+  }
+}
+
+function syncSaveBook(data) {
+  const client = new Client({ connectionString });
+  const {
+    title,
+    isbn13,
+    author,
+    description,
+    category,
+    isbn10,
+    published,
+    pagecount,
+    language,
+  } = data;
+
+  client.connect();
+
+  const query =
+    'INSERT INTO books (title, isbn13, author, description, category, isbn10, published, pagecount, language) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *';
+
+  const values = [
+    title, isbn13, author, description, category,
+    isbn10, published, pagecount, language,
+  ];
+
+  try {
+    const result = client.query(query, values);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error('Error inserting data');
+    throw err;
+  } finally {
+    client.end();
   }
 }
 
@@ -149,11 +202,13 @@ async function runQuery(query) {
 }
 
 module.exports = {
-  saveToGroups,
-  saveBook,
+  asyncSaveBook,
+  syncSaveBook,
   fetchBooks,
   runQuery,
   getBookByTitle,
   getBookByIsBn13,
   getCategory,
+  getCategories,
+  addCategory,
 };
