@@ -7,9 +7,6 @@ const { runQuery } = require('./miscellaneous-db');
 const readFileAsync = util.promisify(fs.readFile);
 const schemaFile = './schema.sql';
 
-const csvFilePath = 'data/books.csv';
-const csv = require('csvtojson');
-
 async function create() {
   const data = readFileAsync(schemaFile);
 

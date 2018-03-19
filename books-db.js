@@ -22,7 +22,7 @@ async function getCategory(category) {
 
 async function getCategories() {
   const client = new Client({ connectionString });
-  const query = 'SELECT * FROM categories;';
+  const query = 'SELECT category FROM categories;';
   await client.connect();
 
   try {
@@ -54,7 +54,7 @@ async function addCategory(category) {
   }
 }
 
-async function asyncSaveBook(data) {
+async function saveBook(data) {
   const client = new Client({ connectionString });
   const {
     title,
@@ -71,13 +71,8 @@ async function asyncSaveBook(data) {
   await client.connect();
 
   const query =
-    `INSERT INTO books(
-      title, isbn13, author, description, category, 
-      isbn10, published, pagecount, language
-    ) 
-    VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *`;
+    'INSERT INTO books(title, isbn13, author, description, category, isbn10, published, pagecount, language) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) returning *';
 
-  console.info(query);
   const values = [
     title, isbn13, author, description, category,
     isbn10, published, pagecount, language,
@@ -92,42 +87,6 @@ async function asyncSaveBook(data) {
     throw err;
   } finally {
     await client.end();
-  }
-}
-
-function syncSaveBook(data) {
-  const client = new Client({ connectionString });
-  const {
-    title,
-    isbn13,
-    author,
-    description,
-    category,
-    isbn10,
-    published,
-    pagecount,
-    language,
-  } = data;
-
-  client.connect();
-
-  const query =
-    'INSERT INTO books (title, isbn13, author, description, category, isbn10, published, pagecount, language) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *';
-
-  const values = [
-    title, isbn13, author, description, category,
-    isbn10, published, pagecount, language,
-  ];
-
-  try {
-    const result = client.query(query, values);
-    const { rows } = result;
-    return rows;
-  } catch (err) {
-    console.error('Error inserting data');
-    throw err;
-  } finally {
-    client.end();
   }
 }
 
@@ -202,8 +161,7 @@ async function runQuery(query) {
 }
 
 module.exports = {
-  asyncSaveBook,
-  syncSaveBook,
+  saveBook,
   fetchBooks,
   runQuery,
   getBookByTitle,
