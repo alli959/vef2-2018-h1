@@ -29,17 +29,15 @@ async function comparePasswords(password, hash) {
   return result;
 }
 
-async function loginUser(username, password) {
+async function getLoginInfo(username) {
   const client = new Client({ connectionString });
-  const query = 'SELECT password FROM users where username = $1';
+  const query = 'SELECT id, username, password FROM users where username = $1';
   await client.connect();
 
   try {
     const data = await client.query(query, [username]);
     const { rows } = data;
-    const { hash } = rows[0];
-    const output = comparePasswords(password, hash);
-    return output;
+    return rows[0];
   } catch (err) {
     console.error(err);
     throw err;
@@ -114,6 +112,5 @@ module.exports = {
   findByUsername,
   findById,
   createUser,
-  loginUser,
+  getLoginInfo,
 };
-
