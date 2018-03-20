@@ -33,6 +33,8 @@ function requireAuthentication(req, res, next) {
         return next(err);
       }
 
+      console.info(info);
+
       if (!user) {
         const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
         return res.status(401).json({ error });

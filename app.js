@@ -34,9 +34,7 @@ app.post('/register', async (req, res) => {
   return res.status(status).json(data);
 });
 
-app.get('/login', (req, res) => {
-  return res.status(200).json('This is /login');
-});
+app.get('/login', (req, res) => res.status(200).json('This is /login'));
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
