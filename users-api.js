@@ -1,8 +1,10 @@
 const {
   getAllUsers,
   findByUsername,
-  findById,
+  findUserById,
   createUser,
+  updateName,
+  updatePassword,
 } = require('./users-db');
 const validator = require('validator');
 const xss = require('xss');
@@ -25,7 +27,7 @@ async function validateRegister({ username, name, password, photo } = {}) { // e
     errors.push({ error: 'Username must be at least 3 characters long' });
   } else {
     const userexists = await findByUsername(username);
-    if (userexists.length > 0) {
+    if (userexists) {
       errors.push({ error: 'Username is taken' });
     }
   }
@@ -53,10 +55,33 @@ async function validateRegister({ username, name, password, photo } = {}) { // e
  * @returns {boolean} true if id is a Integer
  */
 function validateId(id) {
-  if (!validator.isInt(id)) {
+  if (!validator.isInt(String(id))) {
     return false;
   }
   return true;
+}
+
+/**
+ * Validate password
+ *
+ * @param {String} newpass - new password, at least 6 characters
+ */
+function validatePassword(newpass) {
+  const errors = [];
+
+  if (!validator.isLength(String(newpass), { min: 6, max: 255 })) {
+    errors.push({ error: 'Password must at least 6 characters long' });
+  }
+  return errors;
+}
+
+function validateName(name) {
+  const errors = [];
+
+  if (!validator.isLength(name, { min: 1, max: 255 })) {
+    errors.push({ error: 'Name must be a string of length 1 to 255 characters' });
+  }
+  return errors;
 }
 
 /**
@@ -82,10 +107,17 @@ async function getOneById(id) {
     return ({ status: 400, data: { error: 'Invalid ID' } });
   }
 
-  const data = await findById(id);
+  const output = await findUserById(id);
 
-  if (data.length > 0) {
-    return ({ status: 200, data: data[0] });
+  if (output) {
+    const data = {
+      id: output.id,
+      username: output.username,
+      name: output.name,
+      photo: output.photo,
+    };
+
+    return ({ status: 200, data });
   }
   return ({ status: 404, data: { error: 'User was not found' } });
 }
@@ -120,8 +152,44 @@ async function register({ username, name, password, photo } = {}) { // eslint-di
   return { status: 200, data: output[0] };
 }
 
+async function updateUser(id, newname, newpass) {
+  if (!newname && !newpass) {
+    return { status: 400, data: { error: 'You must insert data to update' } };
+  }
+
+  let updatedUser;
+
+  if (!newname) {
+    const errors = validatePassword(newpass);
+
+    if (errors.length > 0) {
+      return { status: 400, data: errors };
+    }
+    updatedUser = await updatePassword(id, newpass);
+  }
+
+  if (!newpass) {
+    const errors = validateName(newname);
+
+    if (errors.length > 0) {
+      return { status: 400, data: errors };
+    }
+    updatedUser = await updateName(id, newname);
+  }
+
+  const data = {
+    id: updatedUser.id,
+    username: updatedUser.username,
+    name: updatedUser.name,
+    photo: updatedUser.photo,
+  };
+
+  return { status: 200, data };
+}
+
 module.exports = {
   getAll,
   getOneById,
   register,
+  updateUser,
 };
