@@ -6,11 +6,19 @@ const {
   fetchBooks,
   getBookById,
   search,
+  updateBooks,
 } = require('./books-db');
 
 const validator = require('validator');
 const xss = require('xss');
 
+
+ function helper(object){
+  if(object === undefined){
+    return false;
+  }
+  return true;
+}
 
 //***********************/
 //********TODO validator********** */
@@ -35,6 +43,62 @@ async function searchBooks(string, offset){
 async function getBooksById(id){
   const data = await getBookById(id);
   return data;
+}
+
+//***********************/
+//********TODO validator********** */
+//********************* */
+
+
+async function changeBook (id, data) {
+  const book = await getBookById(id);
+  
+  const {
+    title,
+    isbn13,
+    author,
+    description,
+    category,
+    isbn10,
+    published,
+    pagecount,
+    language,
+  } = book;
+
+
+ 
+  if(helper(data.title)){
+    book[0].title = data.title;
+  }
+  if(helper(data.isbn13)){
+    book[0].isbn13 = data.isbn13;
+  }
+  if(helper(data.author)){
+    book[0].author = data.author;
+  }
+  if(helper(data.description)){
+    book[0].description = data.description;
+  }
+  if(helper(data.category)){
+    book[0].category = data.category;
+  }
+  if(helper(data.isbn10)){
+    book[0].isbn10 = data.isbn10;
+  }
+  if(helper(data.published)){
+    book[0].published = data.published;
+  }
+  if(helper(data.pagecount)){
+    book[0].pagecount = data.pagecount;
+  }
+  if(helper(data.language)){
+    book[0].language = data.language;
+  }
+  
+  const result = await updateBooks(id, book);
+  
+  
+  return result;
 }
 
 /**
@@ -69,7 +133,7 @@ async function validateBook({
     }
   }
 
-  if (!validator.isISBN(isbn13, { version: 13 })) {
+  if (!validator.isISBN(isbn13, [13])) {
     errors.push({ error: 'ISBN13 must be on the right format' });
   } else {
     const bookExists = await getBookByIsBn13(isbn13);
@@ -79,11 +143,11 @@ async function validateBook({
   }
 
   const categoryExists = await getCategory(category);
-  if (categoryExists.length > 0) {
+  if (!categoryExists.length) {
     errors.push({ error: 'Category does not exist' });
   }
 
-  if (!validator.isISBN(isbn10, { version: 10 }) && isbn10.length > 0) {
+  if (!validator.isISBN(isbn10, [10]) && isbn10.length > 0) {
     errors.push({ error: 'ISBN10 must be on the right format' });
   }
 
@@ -145,7 +209,6 @@ async function addBook({
   };
 
   const output = await saveBook(data);
-
   return ({ status: 200, output: output[0] });
 }
 
@@ -154,4 +217,5 @@ module.exports = {
   getBooks,
   getBooksById,
   searchBooks,
+  changeBook,
 };
