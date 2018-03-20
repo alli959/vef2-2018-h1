@@ -23,9 +23,8 @@ async function getBooks(offset){
 //***********************/
 //********TODO validator********** */
 //********************* */
-async function searchBooks(string){
-  const data = await search(string);
-  console.info(data);
+async function searchBooks(string, offset){
+  const data = await search(string, offset);
   return data;
 }
 

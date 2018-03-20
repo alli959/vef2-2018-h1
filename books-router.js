@@ -10,16 +10,18 @@ const router = express.Router();
 router.use(express.urlencoded({ extended: true }));
 
 router.get('/', async (req, res) => {
-  const { pepp } = req.query;
-  const data = await getBooks(pepp);
-  return res.json(data);
+  const { offset, search } = req.query;
+  const searchData = await searchBooks(search, offset);
+  const offsetData = await getBooks(offset);
+  if (!search) {
+    return res.json(offsetData);
+  } // eslint-disable-line
+  else if (searchData.length === null) {
+    return res.status(404).json({error: 'not found'})
+  }
+  return res.json(searchData);
 });
 
-router.get('/', async (req, res) => {
-  const { search } = req.query;
-  const data = await searchBooks(search);
-  return res.json(data);
-});
 
 router.post('/', async (req, res) => {
   const {

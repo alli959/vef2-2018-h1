@@ -90,12 +90,12 @@ async function saveBook(data) {
   }
 }
 
-async function search(string) {
+async function search(string,offset) {
   const client = new Client({ connectionString });
-  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1))';
+  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1)) offset ($2) limit 10';
   await client.connect();
   try {
-    const data = await client.query(query, [string]);
+    const data = await client.query(query, [string,offset]);
     const { rows } = data;
     return rows;
   } catch (err) {
