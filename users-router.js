@@ -1,11 +1,20 @@
 const express = require('express');
-const { getAll, getOneById, updateUser } = require('./users-api');
+const multer = require('multer');
+const {
+  getAll,
+  getOneById,
+  updateUser,
+  uploadPhoto,
+} = require('./users-api');
 const { requireAuthentication } = require('./authentication');
 
+const uploads = multer({ dest: './temp' });
+
 const router = express.Router();
+
 router.use(express.urlencoded({ extended: true }));
 
-router.get('/', async (req, res) => {
+router.get('/', /* requireAuthentication, */ async (req, res) => {
   const data = await getAll();
 
   res.status(200).json(data);
@@ -21,15 +30,18 @@ router.get('/me', requireAuthentication, async (req, res) => {
 
 router.patch('/me', requireAuthentication, async (req, res) => {
   const { name, password } = req.body;
-  const { user } = req;
-  const { id } = user;
+  const { user: { id } } = req;
 
   const { status, data } = await updateUser(id, name, password);
   return res.status(status).json(data);
 });
 
-router.post('/me/profile', requireAuthentication, (req, res) => {
-  res.send('hello');
+router.post('/me/profile', requireAuthentication, uploads.single('image'), async (req, res) => {
+  const { file } = req;
+  const { user: { id } } = req;
+
+  const { status, data } = await uploadPhoto(id, file);
+  return res.status(status).json(data);
 });
 
 router.get('/me/read', requireAuthentication, (req, res) => {

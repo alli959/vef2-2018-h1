@@ -123,6 +123,23 @@ async function updateName(id, newname) {
   }
 }
 
+async function updatePhoto(id, url) {
+  const client = new Client({ connectionString });
+  const query = 'UPDATE users SET photo = $1 WHERE id = $2 RETURNING *';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [url, id]);
+    const { rows } = result;
+    return rows[0];
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
 module.exports = {
   getAllUsers,
   comparePasswords,
@@ -131,4 +148,5 @@ module.exports = {
   createUser,
   updateName,
   updatePassword,
+  updatePhoto,
 };

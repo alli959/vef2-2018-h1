@@ -1,19 +1,35 @@
+const xss = require('xss');
+const cloudinary = require('cloudinary');
 const {
   getAllUsers,
   findUserById,
   createUser,
   updateName,
   updatePassword,
+  updatePhoto,
 } = require('./users-db');
-const xss = require('xss');
 const {
-  validateId,
   validatePassword,
   validateName,
   validateUsername,
   validatePhoto,
 } = require('./validation');
 
+const {
+  CLOUDINARY_CLOUD,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+} = process.env;
+
+if (!CLOUDINARY_CLOUD || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  console.warn('Missing cloudinary config, uploading images will not work');
+}
+
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
+});
 
 /**
  * Get all users
@@ -34,10 +50,6 @@ async function getAll() {
  * @returns {Object} Promise representing the user object if exists
  */
 async function getOneById(id) {
-  if (!validateId(id)) {
-    return ({ status: 400, data: { error: 'Invalid ID' } });
-  }
-
   const output = await findUserById(id);
 
   if (output) {
@@ -66,6 +78,7 @@ async function getOneById(id) {
  */
 async function register({ username, name, password, photo } = {}) { // eslint-disable-line
   const validation = [];
+
   validation.push(await validateUsername(username));
   validation.push(validateName(name));
   validation.push(validatePassword(password));
@@ -75,9 +88,9 @@ async function register({ username, name, password, photo } = {}) { // eslint-di
 
   const errors = [];
 
-  validation.forEach((i) => {
-    if (i) {
-      errors.push(i);
+  validation.forEach((error) => {
+    if (error) {
+      errors.push(error);
     }
   });
 
@@ -141,9 +154,45 @@ async function updateUser(id, newname, newpass) {
   return { status: 200, data };
 }
 
+/**
+ * Uploads photo to cloudinary and saves url to database
+ *
+ * @param {Int} id - id of user, owner of photo
+ * @param {String} - path to image
+ *
+ * @returns {Promise} Promise representing the updated user
+ */
+async function uploadPhoto(id, file) {
+  if (!file) {
+    return { status: 400, data: { error: 'Couldn\'t find file' } };
+  }
+  const { path } = file;
+
+  if (!path) {
+    return { status: 400, data: { error: 'Can\'t read file path' } };
+  }
+
+  let upload = null;
+
+  try {
+    upload = await cloudinary.v2.uploader.upload(path);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+
+  const { secure_url } = upload; // eslint-disable-line
+
+  const data = await updatePhoto(id, secure_url);
+
+  return { status: 200, data };
+}
+
+
 module.exports = {
   getAll,
   getOneById,
   register,
   updateUser,
+  uploadPhoto,
 };
