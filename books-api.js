@@ -3,10 +3,39 @@ const {
   getBookByTitle,
   getBookByIsBn13,
   getCategory,
+  fetchBooks,
+  getBookById,
+  search,
 } = require('./books-db');
 
 const validator = require('validator');
 const xss = require('xss');
+
+
+//***********************/
+//********TODO validator********** */
+//********************* */
+async function getBooks(offset){
+  const data = await fetchBooks(offset);
+  return data;
+}
+
+//***********************/
+//********TODO validator********** */
+//********************* */
+async function searchBooks(string, offset){
+  const data = await search(string, offset);
+  return data;
+}
+
+
+//***********************/
+//********TODO validator********** */
+//********************* */
+async function getBooksById(id){
+  const data = await getBookById(id);
+  return data;
+}
 
 /**
  * Validation of a new book
@@ -122,4 +151,7 @@ async function addBook({
 
 module.exports = {
   addBook,
+  getBooks,
+  getBooksById,
+  searchBooks,
 };
