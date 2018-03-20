@@ -1,88 +1,19 @@
 const {
   getAllUsers,
-  findByUsername,
   findUserById,
   createUser,
   updateName,
   updatePassword,
 } = require('./users-db');
-const validator = require('validator');
 const xss = require('xss');
+const {
+  validateId,
+  validatePassword,
+  validateName,
+  validateUsername,
+  validatePhoto,
+} = require('./validation');
 
-/**
- * Validation for the registration inputs
- *
- * @param {Object} user - User info to validate
- * @param {String} user.username - Username of user
- * @param {String} user.name - Name of user
- * @param {String} user.password - Password of user
- * @param {String} user.photo - URL to user's photo
- *
- * @returns {Promise} Promise representing a array of errors objects, empty if no errors
- */
-async function validateRegister({ username, name, password, photo } = {}) { // eslint-disable-line
-  const errors = [];
-
-  if (!validator.isLength(username, { min: 3, max: 256 })) {
-    errors.push({ error: 'Username must be at least 3 characters long' });
-  } else {
-    const userexists = await findByUsername(username);
-    if (userexists) {
-      errors.push({ error: 'Username is taken' });
-    }
-  }
-
-  if (!validator.isLength(name, { min: 1, max: 256 })) {
-    errors.push({ error: 'Name must be a string of length 1 to 255 characters' });
-  }
-
-  if (!validator.isLength(password, { min: 6, max: 256 })) {
-    errors.push({ error: 'Password must at least 6 characters long' });
-  }
-
-  if (!validator.isURL(photo) && photo.length > 0) {
-    errors.push({ error: 'Photo must have a valid URL' });
-  }
-
-  return errors;
-}
-
-/**
- * Validation for ID
- *
- * @param {int} id
- *
- * @returns {boolean} true if id is a Integer
- */
-function validateId(id) {
-  if (!validator.isInt(String(id))) {
-    return false;
-  }
-  return true;
-}
-
-/**
- * Validate password
- *
- * @param {String} newpass - new password, at least 6 characters
- */
-function validatePassword(newpass) {
-  const errors = [];
-
-  if (!validator.isLength(String(newpass), { min: 6, max: 255 })) {
-    errors.push({ error: 'Password must at least 6 characters long' });
-  }
-  return errors;
-}
-
-function validateName(name) {
-  const errors = [];
-
-  if (!validator.isLength(name, { min: 1, max: 255 })) {
-    errors.push({ error: 'Name must be a string of length 1 to 255 characters' });
-  }
-  return errors;
-}
 
 /**
  * Get all users
@@ -134,7 +65,21 @@ async function getOneById(id) {
  * @returns {Promise} Promise representing the object of the user to create
  */
 async function register({ username, name, password, photo } = {}) { // eslint-disable-line
-  const errors = await validateRegister({ username, name, password, photo }); //eslint-disable-line
+  const validation = [];
+  validation.push(await validateUsername(username));
+  validation.push(validateName(name));
+  validation.push(validatePassword(password));
+  if (photo) {
+    validation.push(validatePhoto(photo));
+  }
+
+  const errors = [];
+
+  validation.forEach((i) => {
+    if (i) {
+      errors.push(i);
+    }
+  });
 
   if (errors.length > 0) {
     return { status: 400, data: errors };
@@ -152,6 +97,15 @@ async function register({ username, name, password, photo } = {}) { // eslint-di
   return { status: 200, data: output[0] };
 }
 
+/**
+ * Update name and/or password of a user asyncronously
+ *
+ * @param {Int} id - id of the user to update
+ * @param {String} newname - new name of the user
+ * @param {String} newpass - new password of the user
+ *
+ * @returns {Promise} Promise representing the updated user
+ */
 async function updateUser(id, newname, newpass) {
   if (!newname && !newpass) {
     return { status: 400, data: { error: 'You must insert data to update' } };
@@ -162,7 +116,7 @@ async function updateUser(id, newname, newpass) {
   if (!newname) {
     const errors = validatePassword(newpass);
 
-    if (errors.length > 0) {
+    if (errors) {
       return { status: 400, data: errors };
     }
     updatedUser = await updatePassword(id, newpass);
@@ -171,10 +125,10 @@ async function updateUser(id, newname, newpass) {
   if (!newpass) {
     const errors = validateName(newname);
 
-    if (errors.length > 0) {
+    if (errors) {
       return { status: 400, data: errors };
     }
-    updatedUser = await updateName(id, newname);
+    updatedUser = await updateName(id, xss(newname));
   }
 
   const data = {
