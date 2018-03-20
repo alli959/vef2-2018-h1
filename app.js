@@ -2,55 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const books = require('./books-router');
 const users = require('./users-router');
-const { getLoginInfo, comparePasswords } = require('./users-db');
 const { register } = require('./users-api');
 
-const passport = require('passport');
-const { Strategy } = require('passport-local');
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
+const { passport, login } = require('./authentication');
 
-const sessionSecret = 'kool';
+const {
+  PORT: port = 3000,
+  HOST: host = '127.0.0.1',
+} = process.env;
 
 const app = express();
 
-app.use(cookieParser(sessionSecret));
-app.use(session({
-  secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-}));
-
-async function strat(username, password, done) {
-  const user = await getLoginInfo(username);
-
-  if (user) {
-    const result = await comparePasswords(password, user.password);
-    if (result) {
-      console.info(user);
-      return done(null, user);
-    }
-  }
-  return done(null, false);
-}
-
-passport.use(new Strategy(strat));
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await users.findById(id);
-    return done(null, user);
-  } catch (error) {
-    return done(error);
-  }
-});
-
 app.use(passport.initialize());
-app.use(passport.session());
 
 app.use(express.json());
 app.use('/books', books);
@@ -75,16 +38,12 @@ app.get('/login', (req, res) => {
   return res.status(200).json('This is /login');
 });
 
-app.post(
-  '/login',
-  passport.authenticate('local', {
-    failureMessage: 'Vitlaust notendanafn eða lykilorð',
-    failureRedirect: '/login',
-  }),
-  (req, res) => { // eslint-disable-line
-    return res.status(200).json({ message: 'Login successful' });
-  },
-);
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const { status, data } = await login(username, password);
+
+  return res.status(status).json(data);
+});
 
 app.get('/categories', (req, res) => {
 
@@ -110,11 +69,6 @@ function errorHandler(err, req, res, next) { // eslint-disable-line
 
 app.use(notFoundHandler);
 app.use(errorHandler);
-
-const {
-  PORT: port = 3000,
-  HOST: host = '127.0.0.1',
-} = process.env;
 
 app.listen(port, () => {
   console.info(`Server running at http://${host}:${port}/`);

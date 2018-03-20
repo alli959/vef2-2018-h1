@@ -1,6 +1,6 @@
 const express = require('express');
 const { getAll, getOneById } = require('./users-api');
-const { ensureLoggedIn } = require('./utils');
+const { requireAuthentication } = require('./authentication');
 
 const router = express.Router();
 router.use(express.urlencoded({ extended: true }));
@@ -11,27 +11,27 @@ router.get('/', async (req, res) => {
   res.status(200).json(data);
 });
 
-router.get('/me', ensureLoggedIn, (req, res) => {
+router.get('/me', requireAuthentication, (req, res) => {
   res.send('hello');
 });
 
-router.patch('/me', ensureLoggedIn, (req, res) => {
+router.patch('/me', requireAuthentication, (req, res) => {
   res.send('hello');
 });
 
-router.post('/me/profile', ensureLoggedIn, (req, res) => {
+router.post('/me/profile', requireAuthentication, (req, res) => {
   res.send('hello');
 });
 
-router.get('/me/read', ensureLoggedIn, (req, res) => {
+router.get('/me/read', requireAuthentication, (req, res) => {
 
 });
 
-router.post('/me/read', ensureLoggedIn, (req, res) => {
+router.post('/me/read', requireAuthentication, (req, res) => {
 
 });
 
-router.delete('/me/read/:id', ensureLoggedIn, (req, res) => {
+router.delete('/me/read/:id', requireAuthentication, (req, res) => {
   const { id } = req.body;
 });
 

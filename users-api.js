@@ -83,9 +83,16 @@ async function getOneById(id) {
     return ({ status: 400, data: { error: 'Invalid ID' } });
   }
 
-  const data = await findById(id);
+  const output = await findById(id);
 
-  if (data) {
+  if (output) {
+    const data = {
+      id: output.id,
+      username: output.username,
+      name: output.name,
+      photo: output.photo,
+    };
+
     return ({ status: 200, data });
   }
   return ({ status: 404, data: { error: 'User was not found' } });

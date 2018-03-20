@@ -29,14 +29,14 @@ async function comparePasswords(password, hash) {
   return result;
 }
 
-async function getLoginInfo(username) {
+async function findByUsername(username) {
   const client = new Client({ connectionString });
-  const query = 'SELECT id, username, password FROM users where username = $1';
+  const query = 'SELECT * FROM users WHERE username = $1';
   await client.connect();
 
   try {
-    const data = await client.query(query, [username]);
-    const { rows } = data;
+    const result = await client.query(query, [username]);
+    const { rows } = result;
     return rows[0];
   } catch (err) {
     console.error(err);
@@ -46,26 +46,9 @@ async function getLoginInfo(username) {
   }
 }
 
-async function findByUsername(username) {
+async function findUserById(id) {
   const client = new Client({ connectionString });
-  const query = 'SELECT id, username, name, photo FROM users WHERE username = $1';
-  await client.connect();
-
-  try {
-    const result = await client.query(query, [username]);
-    const { rows } = result;
-    return rows;
-  } catch (err) {
-    console.error(err);
-    throw err;
-  } finally {
-    await client.end();
-  }
-}
-
-async function findById(id) {
-  const client = new Client({ connectionString });
-  const query = 'SELECT id, username, name, photo FROM users WHERE id = $1';
+  const query = 'SELECT * FROM users WHERE id = $1';
   await client.connect();
 
   try {
@@ -110,7 +93,6 @@ module.exports = {
   getAllUsers,
   comparePasswords,
   findByUsername,
-  findById,
+  findUserById,
   createUser,
-  getLoginInfo,
 };
