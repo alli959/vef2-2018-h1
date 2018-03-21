@@ -218,7 +218,23 @@ async function getAllReadBy(id, offset = 0) {
   try {
     const result = await client.query(query, [id, offset]);
     const { rows } = result;
-    console.info(rows);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function deleteReadBy(readId, userId) {
+  const client = new Client({ connectionString });
+  const query = 'DELETE FROM readBooks WHERE bookId = $1 AND userId = $2 RETURNING *';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [readId, userId]);
+    const { rows } = result;
     return rows;
   } catch (err) {
     console.error(err);
@@ -260,4 +276,5 @@ module.exports = {
   addBookReadBy,
   getBookReadBy,
   getAllReadBy,
+  deleteReadBy,
 };

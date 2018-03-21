@@ -22,6 +22,7 @@ const {
   getBookReadBy,
   getBookById,
   getAllReadBy,
+  deleteReadBy,
 } = require('./books-db');
 
 const {
@@ -249,6 +250,33 @@ async function addReadBook(userid, bookid, grade = null, comments = '') {
   return { status: 200, data };
 }
 
+/**
+ * Deletes a book from users reading list
+ *
+ * @param {Int} userId - user's id
+ * @param {Int} bookId - book's id
+ *
+ * @returns {Promise} Promise representing the updated reading list
+ */
+async function removeReadBy(userId, bookId) {
+  const errors = [];
+
+  if (!validateId(bookId)) {
+    errors.push({ error: 'Invalid book ID' });
+  }
+
+  if (errors.length > 0) {
+    return { status: 400, data: errors };
+  }
+
+  const data = await deleteReadBy(bookId, userId);
+
+  if (data.length > 0) {
+    return { status: 204 };
+  }
+  return { status: 400, data: { error: 'User has not read this book' } };
+}
+
 module.exports = {
   getAll,
   getOneById,
@@ -257,4 +285,5 @@ module.exports = {
   uploadPhoto,
   getReadBooks,
   addReadBook,
+  removeReadBy,
 };

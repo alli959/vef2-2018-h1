@@ -7,6 +7,7 @@ const {
   uploadPhoto,
   addReadBook,
   getReadBooks,
+  removeReadBy,
 } = require('./users-api');
 const { requireAuthentication } = require('./authentication');
 
@@ -48,6 +49,7 @@ router.post('/me/profile', requireAuthentication, uploads.single('image'), async
 
 router.get('/me/read', requireAuthentication, async (req, res) => {
   const { user: { id } } = req;
+  //gera offset
 
   const { status, data } = await getReadBooks(id);
   return res.status(status).json(data);
@@ -61,8 +63,19 @@ router.post('/me/read', requireAuthentication, async (req, res) => {
   return res.status(status).json(data);
 });
 
-router.delete('/me/read/:id', requireAuthentication, (req, res) => {
-  const { id } = req.body;
+router.delete('/me/read/:id', requireAuthentication, async (req, res) => {
+  const readId = req.params.id;
+  const { user: { id } } = req;
+
+  const { status, data } = await removeReadBy(id, readId);
+  return res.status(status).json(data);
+});
+
+router.get('/:id/read', requireAuthentication, async (req, res) => {
+  const { id } = req.params;
+  console.info(id);
+
+  //res.status(status).json(data);
 });
 
 router.get('/:id', requireAuthentication, async (req, res) => {
