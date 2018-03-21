@@ -90,12 +90,12 @@ async function saveBook(data) {
   }
 }
 
-async function search(string, offset) {
+async function search(string, offset, limit = 10) {
   const client = new Client({ connectionString });
-  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1)) offset ($2) limit 10';
+  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1)) offset ($2) limit $3';
   await client.connect();
   try {
-    const data = await client.query(query, [string, offset]);
+    const data = await client.query(query, [string, offset, limit]);
     const { rows } = data;
     return rows;
   } catch (err) {
@@ -210,13 +210,13 @@ async function getBookReadBy(userid, bookid) {
   }
 }
 
-async function getAllReadBy(id, offset = 0) {
+async function getAllReadBy(id, offset = 0, limit = 10) {
   const client = new Client({ connectionString });
-  const query = 'SELECT * FROM books WHERE id IN (SELECT bookId FROM readBooks WHERE userId = $1) LIMIT 10 OFFSET $2';
+  const query = 'SELECT * FROM books WHERE id IN (SELECT bookId FROM readBooks WHERE userId = $1) LIMIT $2 OFFSET $3';
   await client.connect();
 
   try {
-    const result = await client.query(query, [id, offset]);
+    const result = await client.query(query, [id, limit, offset]);
     const { rows } = result;
     return rows;
   } catch (err) {

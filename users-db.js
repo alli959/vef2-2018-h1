@@ -4,14 +4,14 @@ const { Client } = require('pg');
 const connectionString = process.env.DATABASE_URL;
 
 
-async function getAllUsers() {
+async function getAllUsers(offset = 0, limit = 10) {
   const client = new Client({ connectionString });
 
   await client.connect();
-  const query = 'SELECT * FROM users';
+  const query = 'SELECT * FROM users LIMIT $1 OFFSET $2';
 
   try {
-    const result = await client.query(query);
+    const result = await client.query(query, [offset, limit]);
     const { rows } = result;
     return rows;
   } catch (err) {
@@ -21,7 +21,6 @@ async function getAllUsers() {
     await client.end();
   }
 }
-
 
 async function comparePasswords(password, hash) {
   const result = await bcrypt.compare(password, hash);

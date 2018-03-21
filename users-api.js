@@ -1,6 +1,5 @@
 const xss = require('xss');
 const cloudinary = require('cloudinary');
-const validator = require('validator');
 const {
   getAllUsers,
   findUserById,
@@ -44,12 +43,18 @@ cloudinary.config({
 /**
  * Get all users
  *
- * @returns {Promise} Promise representing the object containing all users
+ * @param {Int} offset - page offset
+ *
+ * @returns {Promise} Promise representing the object containing page of users
  */
-async function getAll() {
-  const output = await getAllUsers();
+async function getAll(offset, limit) {
+  if (!validateId(offset) && offset > 0) {
+    return { status: 400, error: 'Page offset is invalid' };
+  }
 
-  return output;
+  const data = await getAllUsers(offset, limit);
+
+  return { status: 200, data };
 }
 
 /**
@@ -202,11 +207,22 @@ async function uploadPhoto(id, file) {
  * Get page of books read by user
  *
  * @param {Int} id - user's id
+ * @param {Int} offset - page offset
  *
- * @returns {Promise} Promise representing the list of books
+ * @returns {Promise} Promise representing the page of books
  */
-async function getReadBooks(userid) {
-  const data = await getAllReadBy(userid);
+async function getReadBooks(userId, offset, limit) {
+  const errors = [];
+
+  if (!validateId(offset) && offset > 0) {
+    errors.push({ error: 'Page offset is invalid' });
+  }
+
+  if (errors.length > 0) {
+    return { status: 400, data: errors };
+  }
+
+  const data = await getAllReadBy(userId, offset, limit);
 
   return { status: 200, data };
 }

@@ -11,16 +11,19 @@ const {
 } = require('./users-api');
 const { requireAuthentication } = require('./authentication');
 
+const { PAGE_LIMIT: limit = 10 } = process.env;
+
 const uploads = multer({ dest: './temp' });
 
 const router = express.Router();
 
 router.use(express.urlencoded({ extended: true }));
 
-router.get('/', /* requireAuthentication, */ async (req, res) => {
-  const data = await getAll();
+router.get('/', requireAuthentication, async (req, res) => {
+  const { query: { offset = 0 } } = req;
+  const { status, data } = await getAll(offset, limit);
 
-  res.status(200).json(data);
+  res.status(status).json({ limit, offset, items: data });
 });
 
 router.get('/me', requireAuthentication, async (req, res) => {
@@ -49,10 +52,10 @@ router.post('/me/profile', requireAuthentication, uploads.single('image'), async
 
 router.get('/me/read', requireAuthentication, async (req, res) => {
   const { user: { id } } = req;
-  //gera offset
+  const { query: { offset = 0 } } = req;
 
-  const { status, data } = await getReadBooks(id);
-  return res.status(status).json(data);
+  const { status, data } = await getReadBooks(id, offset, limit);
+  return res.status(status).json({ limit, offset, items: data });
 });
 
 router.post('/me/read', requireAuthentication, async (req, res) => {
@@ -72,10 +75,11 @@ router.delete('/me/read/:id', requireAuthentication, async (req, res) => {
 });
 
 router.get('/:id/read', requireAuthentication, async (req, res) => {
-  const { id } = req.params;
-  console.info(id);
+  const { params: { id } } = req;
+  const { query: { offset = 0 } } = req;
 
-  //res.status(status).json(data);
+  const { status, data } = await getReadBooks(id, offset, limit);
+  res.status(status).json({ limit, offset, items: data });
 });
 
 router.get('/:id', requireAuthentication, async (req, res) => {
