@@ -36,10 +36,6 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alli959/vef2_verk3.git"
-  },
-  "bugs": {
-    "url": "https://github.com/alli959/vef2_verk3/issues"
-  },
-  "homepage": "https://github.com/alli959/vef2_verk3#readme"
+    "url": "https://github.com/alli959/vef2-2018-h1.git"
+  }
 }
