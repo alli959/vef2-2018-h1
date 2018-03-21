@@ -59,40 +59,49 @@ async function changeBook (id, data) {
     language,
   } = book;
 
-
+  const newBook = book[0];
  
   if (data.title) {
-    book[0].title = data.title;
+    newBook.title = xss(data.title);
+
   }
   if (data.isbn13) {
-    book[0].isbn13 = data.isbn13;
+    newBook.isbn13 = xss(data.isbn13);
   }
   if (data.author) {
-    book[0].author = data.author;
+    newBook.author = xss(data.author);
   }
   if (data.description) {
-    book[0].description = data.description;
+    newBook.description = xss(data.description);
   }
   if (data.category) {
-    book[0].category = data.category;
+    newBook.category = xss(data.category);
   }
   if (data.isbn10) {
-    book[0].isbn10 = data.isbn10;
+    newBook.isbn10 = xss(data.isbn10);
   }
   if (data.published) {
-    book[0].published = data.published;
+    newBook.published = xss(data.published);
   }
   if (data.pagecount) {
-    book[0].pagecount = data.pagecount;
+    newBook.pagecount = xss(data.pagecount);
   }
   if (data.language) {
-    book[0].language = data.language;
+    newBook.language = xss(data.language);
+  }
+
+
+  const errors = await validateBook(newBook);
+  
+  console.log(errors);
+  if (errors.length > 0) {
+    return ({ status: 400, data: errors });
   }
   
   const result = await updateBooks(id, book);
   
   
-  return result;
+  return ({ status: 200, output: result });
 }
 
 /**
@@ -117,6 +126,7 @@ async function validateBook({
   language,
 } = {}) {
   const errors = [];
+ 
 
   if (!validator.isLength(title, { min: 1 })) {
     errors.push({ error: 'Title cant\'t be empty' });
@@ -132,6 +142,7 @@ async function validateBook({
   } else {
     const bookExists = await getBookByIsBn13(isbn13);
     if (bookExists.length > 0) {
+      console.log(bookExists);
       errors.push({ error: 'This ISBN13 is already registered' });
     }
   }
@@ -145,7 +156,7 @@ async function validateBook({
     errors.push({ error: 'ISBN10 must be on the right format' });
   }
 
-  if (!validator.isInt(pagecount, { min: 0, max: 2147483647 })) {
+  if (!validator.isInt(String(pagecount), { min: 0, max: 2147483647 })) {
     errors.push({ error: 'Pagenumber must be a integer' });
   }
 

@@ -53,9 +53,21 @@ router.get('/:id', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
   const { id } = req.params;
-  const { body } = req.body;
-  const data = await changeBook(id,req.body);
-  return res.json(data);
+  const {
+    title,
+    isbn13,
+    author = '',
+    description = '',
+    category,
+    isbn10 = '',
+    published = '',
+    pagecount = 0,
+    language = '',
+  } = req.body;
+  
+
+  const {status, data } = await changeBook(id, req.body);
+  return res.status(status).json(data);
 
 });
 
