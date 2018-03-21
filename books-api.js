@@ -8,10 +8,12 @@ const {
   getBookById,
   addNewCategory,
   search,
+  updateBooks,
 } = require('./books-db');
 
 const validator = require('validator');
 const xss = require('xss');
+
 
 
 //***********************/
@@ -39,6 +41,71 @@ async function getBooksById(id){
   return data;
 }
 
+//***********************/
+//********TODO validator********** */
+//********************* */
+
+
+async function changeBook (id, data) {
+  const book = await getBookById(id);
+  
+  const {
+    title,
+    isbn13,
+    author,
+    description,
+    category,
+    isbn10,
+    published,
+    pagecount,
+    language,
+  } = book;
+
+  const newBook = book[0];
+ 
+  if (data.title) {
+    newBook.title = xss(data.title);
+
+  }
+  if (data.isbn13) {
+    newBook.isbn13 = xss(data.isbn13);
+  }
+  if (data.author) {
+    newBook.author = xss(data.author);
+  }
+  if (data.description) {
+    newBook.description = xss(data.description);
+  }
+  if (data.category) {
+    newBook.category = xss(data.category);
+  }
+  if (data.isbn10) {
+    newBook.isbn10 = xss(data.isbn10);
+  }
+  if (data.published) {
+    newBook.published = xss(data.published);
+  }
+  if (data.pagecount) {
+    newBook.pagecount = xss(data.pagecount);
+  }
+  if (data.language) {
+    newBook.language = xss(data.language);
+  }
+
+
+  const errors = await validateBook(newBook);
+  
+  console.log(errors);
+  if (errors.length > 0) {
+    return ({ status: 400, data: errors });
+  }
+  
+  const result = await updateBooks(id, book);
+  
+  
+  return ({ status: 200, output: result });
+}
+
 /**
  * Validation of a new book
  *
@@ -61,6 +128,7 @@ async function validateBook({
   language,
 } = {}) {
   const errors = [];
+ 
 
   if (!validator.isLength(title, { min: 1 })) {
     errors.push({ error: 'Title cant\'t be empty' });
@@ -71,25 +139,26 @@ async function validateBook({
     }
   }
 
-  if (!validator.isISBN(isbn13, { version: 13 })) {
+  if (!validator.isISBN(isbn13, [13])) {
     errors.push({ error: 'ISBN13 must be on the right format' });
   } else {
     const bookExists = await getBookByIsBn13(isbn13);
     if (bookExists.length > 0) {
+      console.log(bookExists);
       errors.push({ error: 'This ISBN13 is already registered' });
     }
   }
 
   const categoryExists = await getCategory(category);
-  if (categoryExists.length > 0) {
+  if (!categoryExists.length) {
     errors.push({ error: 'Category does not exist' });
   }
 
-  if (!validator.isISBN(isbn10, { version: 10 }) && isbn10.length > 0) {
+  if (!validator.isISBN(isbn10, [10]) && isbn10.length > 0) {
     errors.push({ error: 'ISBN10 must be on the right format' });
   }
 
-  if (!validator.isInt(pagecount, { min: 0, max: 2147483647 })) {
+  if (!validator.isInt(String(pagecount), { min: 0, max: 2147483647 })) {
     errors.push({ error: 'Pagenumber must be a integer' });
   }
 
@@ -147,7 +216,6 @@ async function addBook({
   };
 
   const output = await saveBook(data);
-
   return ({ status: 200, output: output[0] });
 }
 
@@ -186,4 +254,5 @@ module.exports = {
   searchBooks,
   getCategories,
   addCategory,
+  changeBook,
 };
