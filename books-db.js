@@ -123,7 +123,7 @@ async function search(string, offset, limit = 10) {
   }
 }
 
-async function updateBooks(id, data ) {
+async function updateBooks(id, data) {
   const client = new Client({ connectionString });
 
   const {

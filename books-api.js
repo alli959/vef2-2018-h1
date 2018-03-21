@@ -14,41 +14,103 @@ const {
 const validator = require('validator');
 const xss = require('xss');
 
+/**
+ * Validation of a new book
+ *
+ * @param {Object} book - Book object to add
+ * @param {String} book.title - Book's title, must be unique
+ * @param {String} book.isbn13 - isbn13 ID of the book, must be unique and on the right format
+ * @param {String} book.category - Category in which the book is
+ * @param {String} book.isbn10 - isbn10 ID of the book, must be on the right format
+ * @param {Int}    book.pagecount - Number of pages in the book
+ * @param {String} book.language - Two-character string of the book's language
+ *
+ * @returns {Promise} Promise representing a array of errors objects, empty if no errors
+ */
+async function validateBook({
+  title,
+  isbn13,
+  category,
+  isbn10,
+  pagecount,
+  language,
+} = {}) {
+  const errors = [];
 
 
-//***********************/
-//********TODO validator********** */
-//********************* */
-async function getBooks(offset){
+  if (!validator.isLength(title, { min: 1 })) {
+    errors.push({ error: 'Title cant\'t be empty' });
+  } else {
+    const bookExists = await getBookByTitle(title);
+    if (bookExists.length > 0) {
+      errors.push({ error: 'This title is already registered' });
+    }
+  }
+
+  if (!validator.isISBN(isbn13, [13])) {
+    errors.push({ error: 'ISBN13 must be on the right format' });
+  } else {
+    const bookExists = await getBookByIsBn13(isbn13);
+    if (bookExists.length > 0) {
+      errors.push({ error: 'This ISBN13 is already registered' });
+    }
+  }
+
+  const categoryExists = await getCategory(category);
+  if (!categoryExists.length) {
+    errors.push({ error: 'Category does not exist' });
+  }
+
+  if (!validator.isISBN(isbn10, [10]) && isbn10.length > 0) {
+    errors.push({ error: 'ISBN10 must be on the right format' });
+  }
+
+  if (!validator.isInt(String(pagecount), { min: 0, max: 2147483647 })) {
+    errors.push({ error: 'Pagenumber must be a integer' });
+  }
+
+  if ((typeof language) !== 'string') {
+    errors.push({ error: 'Language must be a string of the format \'XX\'' });
+  } else if (language.length !== 2 && language.length > 0) {
+    errors.push({ error: 'Language must be a string of the format \'XX\'' });
+  }
+
+  return errors;
+}
+
+// ***********************/
+// ********TODO validator********** */
+// ********************* */
+async function getBooks(offset) {
   const data = await fetchBooks(offset);
   return data;
 }
 
-//***********************/
-//********TODO validator********** */
-//********************* */
-async function searchBooks(string, offset){
+// ***********************/
+// ********TODO validator********** */
+// ********************* */
+async function searchBooks(string, offset) {
   const data = await search(string, offset);
   return data;
 }
 
 
-//***********************/
-//********TODO validator********** */
-//********************* */
-async function getBooksById(id){
+// ***********************/
+// ********TODO validator********** */
+// ********************* */
+async function getBooksById(id) {
   const data = await getBookById(id);
   return data;
 }
 
-//***********************/
-//********TODO validator********** */
-//********************* */
+// ***********************/
+// ********TODO validator********** */
+// ********************* */
 
 
-async function changeBook (id, data) {
+async function changeBook(id, data = {}) {
   const book = await getBookById(id);
-  
+
   const {
     title,
     isbn13,
@@ -62,7 +124,7 @@ async function changeBook (id, data) {
   } = book;
 
   const newBook = book[0];
- 
+
   if (data.title) {
     newBook.title = xss(data.title);
 
@@ -94,81 +156,14 @@ async function changeBook (id, data) {
 
 
   const errors = await validateBook(newBook);
-  
-  console.log(errors);
+
   if (errors.length > 0) {
     return ({ status: 400, data: errors });
   }
-  
+
   const result = await updateBooks(id, book);
-  
-  
+
   return ({ status: 200, output: result });
-}
-
-/**
- * Validation of a new book
- *
- * @param {Object} book - Book object to add
- * @param {String} book.title - Book's title, must be unique
- * @param {String} book.isbn13 - isbn13 ID of the book, must be unique and on the right format
- * @param {String} book.category - Category in which the book is
- * @param {String} book.isbn10 - isbn10 ID of the book, must be on the right format
- * @param {Int}    book.pagecount - Number of pages in the book
- * @param {String} book.language - Two-character string of the book's language
- *
- * @returns {Promise} Promise representing a array of errors objects, empty if no errors
- */
-async function validateBook({
-  title,
-  isbn13,
-  category,
-  isbn10,
-  pagecount,
-  language,
-} = {}) {
-  const errors = [];
- 
-
-  if (!validator.isLength(title, { min: 1 })) {
-    errors.push({ error: 'Title cant\'t be empty' });
-  } else {
-    const bookExists = await getBookByTitle(title);
-    if (bookExists.length > 0) {
-      errors.push({ error: 'This title is already registered' });
-    }
-  }
-
-  if (!validator.isISBN(isbn13, [13])) {
-    errors.push({ error: 'ISBN13 must be on the right format' });
-  } else {
-    const bookExists = await getBookByIsBn13(isbn13);
-    if (bookExists.length > 0) {
-      console.log(bookExists);
-      errors.push({ error: 'This ISBN13 is already registered' });
-    }
-  }
-
-  const categoryExists = await getCategory(category);
-  if (!categoryExists.length) {
-    errors.push({ error: 'Category does not exist' });
-  }
-
-  if (!validator.isISBN(isbn10, [10]) && isbn10.length > 0) {
-    errors.push({ error: 'ISBN10 must be on the right format' });
-  }
-
-  if (!validator.isInt(String(pagecount), { min: 0, max: 2147483647 })) {
-    errors.push({ error: 'Pagenumber must be a integer' });
-  }
-
-  if ((typeof language) !== 'string') {
-    errors.push({ error: 'Language must be a string of the format \'XX\'' });
-  } else if (language.length !== 2 && language.length > 0) {
-    errors.push({ error: 'Language must be a string of the format \'XX\'' });
-  }
-
-  return errors;
 }
 
 /**
