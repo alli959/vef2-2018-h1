@@ -7,6 +7,8 @@ async function runQuery(query) {
 
   await client.connect();
 
+  console.info(query);
+
   try {
     const result = await client.query(query);
 
