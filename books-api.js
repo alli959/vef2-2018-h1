@@ -37,7 +37,6 @@ async function validateBook({
 } = {}) {
   const errors = [];
 
-
   if (!validator.isLength(title, { min: 1 })) {
     errors.push({ error: 'Title cant\'t be empty' });
   } else {
@@ -46,6 +45,7 @@ async function validateBook({
       errors.push({ error: 'This title is already registered' });
     }
   }
+  
 
   if (!validator.isISBN(isbn13, [13])) {
     errors.push({ error: 'ISBN13 must be on the right format' });
@@ -55,6 +55,7 @@ async function validateBook({
       errors.push({ error: 'This ISBN13 is already registered' });
     }
   }
+
 
   const categoryExists = await getCategory(category);
   if (!categoryExists.length) {
@@ -73,6 +74,71 @@ async function validateBook({
     errors.push({ error: 'Language must be a string of the format \'XX\'' });
   } else if (language.length !== 2 && language.length > 0) {
     errors.push({ error: 'Language must be a string of the format \'XX\'' });
+  }
+
+  return errors;
+}
+
+
+
+async function validateBookChange({
+  title,
+  isbn13,
+  category,
+  isbn10,
+  pagecount,
+  language,
+} = {}) {
+  const errors = [];
+
+  if (title) {
+    if (!validator.isLength(title, { min: 1 })) {
+      errors.push({ error: 'Title cant\'t be empty' });
+    } else {
+      const bookExists = await getBookByTitle(title);
+      if (bookExists.length > 0) {
+        errors.push({ error: 'This title is already registered' });
+      }
+    }
+  }
+
+  if (isbn13) {
+    if (!validator.isISBN(isbn13, [13])) {
+      errors.push({ error: 'ISBN13 must be on the right format' });
+    } else {
+      const bookExists = await getBookByIsBn13(isbn13);
+      if (bookExists.length > 0) {
+        errors.push({ error: 'This ISBN13 is already registered' });
+      }
+    }
+  }
+  if (category) {
+    const categoryExists = await getCategory(category);
+    if (!categoryExists.length) {
+      errors.push({ error: 'Category does not exist' });
+    }
+  }
+  
+  if (isbn10) {
+    if (!validator.isISBN(isbn10, [10]) && isbn10.length > 0) {
+      errors.push({ error: 'ISBN10 must be on the right format' });
+    }
+  }
+
+
+  if (pagecount) {
+    if (!validator.isInt((pagecount), { min: 0, max: 2147483647 })) {
+      errors.push({ error: 'Pagenumber must be a integer' });
+    }
+  }
+
+
+  if (language) {
+    if ((typeof language) !== 'string') {
+      errors.push({ error: 'Language must be a string of the format \'XX\'' });
+    } else if (language.length !== 2 && language.length > 0) {
+      errors.push({ error: 'Language must be a string of the format \'XX\'' });
+    }
   }
 
   return errors;
@@ -109,25 +175,19 @@ async function getBooksById(id) {
 
 
 async function changeBook(id, data = {}) {
-  const book = await getBookById(id);
+  const errors = await validateBookChange(data);
 
-  const {
-    title,
-    isbn13,
-    author,
-    description,
-    category,
-    isbn10,
-    published,
-    pagecount,
-    language,
-  } = book;
+  if (errors.length > 0) {
+    return ({ status: 400, data: errors });
+  }
+
+  const book = await getBookById(id);
 
   const newBook = book[0];
 
+
   if (data.title) {
     newBook.title = xss(data.title);
-
   }
   if (data.isbn13) {
     newBook.isbn13 = xss(data.isbn13);
@@ -152,13 +212,6 @@ async function changeBook(id, data = {}) {
   }
   if (data.language) {
     newBook.language = xss(data.language);
-  }
-
-
-  const errors = await validateBook(newBook);
-
-  if (errors.length > 0) {
-    return ({ status: 400, data: errors });
   }
 
   const result = await updateBooks(id, book);

@@ -18,7 +18,7 @@ router.get('/', async (req, res) => {
     return res.json(offsetData);
   } // eslint-disable-line
   else if (searchData.length === null) {
-    return res.status(404).json({ error: 'not found' });
+    return res.status(404).json({error: 'not found'})
   }
   return res.json(searchData);
 });
@@ -53,32 +53,14 @@ router.get('/:id', async (req, res) => {
 
 router.patch('/:id', async (req, res) => {
   const { id } = req.params;
-  const {
-    title,
-    isbn13,
-    author = '',
-    description = '',
-    category,
-    isbn10 = '',
-    published = '',
-    pagecount = 0,
-    language = '',
-  } = req.body;
+  
 
-  const bookData = {
-    title,
-    isbn13,
-    author,
-    description,
-    category,
-    isbn10,
-    published,
-    pagecount,
-    language,
-  };
-
-  const { status, data } = await changeBook(id, bookData);
+  const {status , data } = await changeBook(id, req.body);
   return res.status(status).json(data);
+
 });
+
+
+
 
 module.exports = router;
