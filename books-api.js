@@ -216,7 +216,7 @@ async function changeBook(id, data = {}) {
 
   const result = await updateBooks(id, book);
 
-  return ({ status: 200, output: result });
+  return ({ status: 200, data: result[0] });
 }
 
 /**

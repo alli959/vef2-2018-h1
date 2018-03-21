@@ -139,7 +139,7 @@ async function updateBooks(id, data) {
   } = data;
 
   await client.connect();
-  const query = 'UPDATE books SET (title,isbn13,author,description,category,isbn10,published,pagecount,language) = ($2, $3, $4, $5, $6, $7, $8, $9, $10) WHERE id = $1';
+  const query = 'UPDATE books SET (title,isbn13,author,description,category,isbn10,published,pagecount,language) = ($2, $3, $4, $5, $6, $7, $8, $9, $10) WHERE id = $1 returning *';
 
   const values = [
     data[0].id, data[0].title, data[0].isbn13, data[0].author, data[0].description, data[0].category,
