@@ -8,7 +8,7 @@ async function getAllUsers(offset = 0, limit = 10) {
   const client = new Client({ connectionString });
 
   await client.connect();
-  const query = 'SELECT username, name, photo FROM users LIMIT $1 OFFSET $2';
+  const query = 'SELECT id, username, name, photo FROM users LIMIT $1 OFFSET $2';
 
   try {
     const result = await client.query(query, [limit, offset]);

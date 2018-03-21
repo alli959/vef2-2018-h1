@@ -28,10 +28,10 @@ const xss = require('xss');
  * @returns {Promise} Promise representing a array of errors objects, empty if no errors
  */
 async function validateBook({
-  title,
-  isbn13,
+  title = '',
+  isbn13 = '',
   category,
-  isbn10,
+  isbn10 = '',
   pagecount,
   language,
 } = {}) {
