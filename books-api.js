@@ -80,7 +80,19 @@ async function validateBook({
 }
 
 
-
+/**
+ * Validation of a changed book
+ *
+ * @param {Object} book - Book object to add
+ * @param {String} book.title - Book's title, must be unique
+ * @param {String} book.isbn13 - isbn13 ID of the book, must be unique and on the right format
+ * @param {String} book.category - Category in which the book is
+ * @param {String} book.isbn10 - isbn10 ID of the book, must be on the right format
+ * @param {Int}    book.pagecount - Number of pages in the book
+ * @param {String} book.language - Two-character string of the book's language
+ *
+ * @returns {Promise} Promise representing a array of errors objects, empty if no errors
+ */
 async function validateBookChange({
   title,
   isbn13,
@@ -145,9 +157,10 @@ async function validateBookChange({
 }
 
 /**
- * 
+ * get all books
+ *
  * @param {Int} offset
- * 
+ *
  * @returns {promise}
  */
 async function getBooks(offset) {
@@ -156,11 +169,12 @@ async function getBooks(offset) {
 }
 
 /**
+ * search for a book
  *
- * @param {String} string 
+ * @param {String} string
  * @param {Int} offset
- * 
- *@returns {promise} 
+ *
+ *@returns {promise}
  */
 async function searchBooks(string, offset) {
   const data = await search(string, offset);
@@ -169,10 +183,11 @@ async function searchBooks(string, offset) {
 
 
 /**
+ * get books by id
  *
  * @param {Int} id
  *
- * @returns {promise} 
+ * @returns {promise}
  */
 async function getBooksById(id) {
   const data = await getBookById(id);
@@ -180,6 +195,7 @@ async function getBooksById(id) {
 }
 
 /**
+ * change books
  *
  * @param {Int} id
  * @param {Object} data
