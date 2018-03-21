@@ -4,6 +4,7 @@ const {
   getBooks,
   getBooksById,
   searchBooks,
+  changeBook,
 } = require('./books-api');
 
 const router = express.Router();
@@ -50,10 +51,16 @@ router.get('/:id', async (req, res) => {
   return res.json(data);
 });
 
-router.patch('/:id', (req, res) => {
+router.patch('/:id', async (req, res) => {
   const { id } = req.params;
+  const { body } = req.body;
+  const data = await changeBook(id,req.body);
+  return res.json(data);
 
 });
+
+
+
 
 
 module.exports = router;

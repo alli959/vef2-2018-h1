@@ -108,6 +108,41 @@ async function search(string,offset) {
 
 }
 
+async function updateBooks(id, data ) {
+  const client = new Client({ connectionString });
+
+  const {
+    title,
+    isbn13,
+    author,
+    description,
+    category,
+    isbn10,
+    published,
+    pagecount,
+    language,
+  } = data;
+
+
+  await client.connect();
+  const query = 'UPDATE books SET (title,isbn13,author,description,category,isbn10,published,pagecount,language) = ($2, $3, $4, $5, $6, $7, $8, $9, $10) WHERE id = $1';
+
+  const values = [
+    id, data[0].title, data[0].isbn13, data[0].author, data[0].description, data[0].category,
+    data[0].isbn10, data[0].published, data[0].pagecount, data[0].language,
+  ];
+  try {
+    const result = await client.query(query, values);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.info(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
 async function getBookByTitle(title) {
   const client = new Client({ connectionString });
   const query = 'SELECT * FROM books WHERE title = $1';
@@ -207,4 +242,5 @@ module.exports = {
   addCategory,
   getBookById,
   search,
+  updateBooks,
 };
