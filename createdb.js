@@ -8,7 +8,7 @@ const readFileAsync = util.promisify(fs.readFile);
 const schemaFile = './schema.sql';
 
 async function create() {
-  const data = readFileAsync(schemaFile);
+  const data = await readFileAsync(schemaFile);
 
   await runQuery(data.toString('utf-8'));
 

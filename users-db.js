@@ -4,14 +4,14 @@ const { Client } = require('pg');
 const connectionString = process.env.DATABASE_URL;
 
 
-async function getAllUsers() {
+async function getAllUsers(offset = 0, limit = 10) {
   const client = new Client({ connectionString });
 
   await client.connect();
-  const query = 'SELECT * FROM users';
+  const query = 'SELECT * FROM users LIMIT $1 OFFSET $2';
 
   try {
-    const result = await client.query(query);
+    const result = await client.query(query, [limit, offset]);
     const { rows } = result;
     return rows;
   } catch (err) {
@@ -21,7 +21,6 @@ async function getAllUsers() {
     await client.end();
   }
 }
-
 
 async function comparePasswords(password, hash) {
   const result = await bcrypt.compare(password, hash);
@@ -123,6 +122,23 @@ async function updateName(id, newname) {
   }
 }
 
+async function updatePhoto(id, url) {
+  const client = new Client({ connectionString });
+  const query = 'UPDATE users SET photo = $1 WHERE id = $2 RETURNING *';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [url, id]);
+    const { rows } = result;
+    return rows[0];
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
 module.exports = {
   getAllUsers,
   comparePasswords,
@@ -131,4 +147,5 @@ module.exports = {
   createUser,
   updateName,
   updatePassword,
+  updatePhoto,
 };

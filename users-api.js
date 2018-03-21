@@ -1,98 +1,61 @@
+const xss = require('xss');
+const cloudinary = require('cloudinary');
 const {
   getAllUsers,
-  findByUsername,
   findUserById,
   createUser,
   updateName,
   updatePassword,
+  updatePhoto,
 } = require('./users-db');
-const validator = require('validator');
-const xss = require('xss');
+const {
+  validateId,
+  validatePassword,
+  validateName,
+  validateUsername,
+  validatePhoto,
+  validateGrade,
+} = require('./validation');
+const {
+  addBookReadBy,
+  getBookReadBy,
+  getBookById,
+  getAllReadBy,
+  deleteReadBy,
+} = require('./books-db');
 
-/**
- * Validation for the registration inputs
- *
- * @param {Object} user - User info to validate
- * @param {String} user.username - Username of user
- * @param {String} user.name - Name of user
- * @param {String} user.password - Password of user
- * @param {String} user.photo - URL to user's photo
- *
- * @returns {Promise} Promise representing a array of errors objects, empty if no errors
- */
-async function validateRegister({ username, name, password, photo } = {}) { // eslint-disable-line
-  const errors = [];
+const {
+  CLOUDINARY_CLOUD,
+  CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET,
+} = process.env;
 
-  if (!validator.isLength(username, { min: 3, max: 256 })) {
-    errors.push({ error: 'Username must be at least 3 characters long' });
-  } else {
-    const userexists = await findByUsername(username);
-    if (userexists) {
-      errors.push({ error: 'Username is taken' });
-    }
-  }
-
-  if (!validator.isLength(name, { min: 1, max: 256 })) {
-    errors.push({ error: 'Name must be a string of length 1 to 255 characters' });
-  }
-
-  if (!validator.isLength(password, { min: 6, max: 256 })) {
-    errors.push({ error: 'Password must at least 6 characters long' });
-  }
-
-  if (!validator.isURL(photo) && photo.length > 0) {
-    errors.push({ error: 'Photo must have a valid URL' });
-  }
-
-  return errors;
+if (!CLOUDINARY_CLOUD || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+  console.warn('Missing cloudinary config, uploading images will not work');
 }
 
-/**
- * Validation for ID
- *
- * @param {int} id
- *
- * @returns {boolean} true if id is a Integer
- */
-function validateId(id) {
-  if (!validator.isInt(String(id))) {
-    return false;
-  }
-  return true;
-}
-
-/**
- * Validate password
- *
- * @param {String} newpass - new password, at least 6 characters
- */
-function validatePassword(newpass) {
-  const errors = [];
-
-  if (!validator.isLength(String(newpass), { min: 6, max: 255 })) {
-    errors.push({ error: 'Password must at least 6 characters long' });
-  }
-  return errors;
-}
-
-function validateName(name) {
-  const errors = [];
-
-  if (!validator.isLength(name, { min: 1, max: 255 })) {
-    errors.push({ error: 'Name must be a string of length 1 to 255 characters' });
-  }
-  return errors;
-}
+cloudinary.config({
+  cloud_name: CLOUDINARY_CLOUD,
+  api_key: CLOUDINARY_API_KEY,
+  api_secret: CLOUDINARY_API_SECRET,
+});
 
 /**
  * Get all users
  *
- * @returns {Promise} Promise representing the object containing all users
+ * @param {Int} offset - page offset
+ *
+ * @returns {Promise} Promise representing the object containing page of users
  */
-async function getAll() {
-  const output = await getAllUsers();
+async function getAll(offset, limit) {
+  if (!validateId(offset) && offset > 0) {
+    return { status: 400, error: 'Page offset is invalid' };
+  }
 
-  return output;
+  const data = await getAllUsers(offset, limit);
+  console.info(data);
+
+  return { status: 200, data };
 }
 
 /**
@@ -103,10 +66,6 @@ async function getAll() {
  * @returns {Object} Promise representing the user object if exists
  */
 async function getOneById(id) {
-  if (!validateId(id)) {
-    return ({ status: 400, data: { error: 'Invalid ID' } });
-  }
-
   const output = await findUserById(id);
 
   if (output) {
@@ -134,7 +93,22 @@ async function getOneById(id) {
  * @returns {Promise} Promise representing the object of the user to create
  */
 async function register({ username, name, password, photo } = {}) { // eslint-disable-line
-  const errors = await validateRegister({ username, name, password, photo }); //eslint-disable-line
+  const validation = [];
+
+  validation.push(await validateUsername(username));
+  validation.push(validateName(name));
+  validation.push(validatePassword(password));
+  if (photo) {
+    validation.push(validatePhoto(photo));
+  }
+
+  const errors = [];
+
+  validation.forEach((error) => {
+    if (error) {
+      errors.push(error);
+    }
+  });
 
   if (errors.length > 0) {
     return { status: 400, data: errors };
@@ -152,6 +126,15 @@ async function register({ username, name, password, photo } = {}) { // eslint-di
   return { status: 200, data: output[0] };
 }
 
+/**
+ * Update name and/or password of a user asyncronously
+ *
+ * @param {Int} id - id of the user to update
+ * @param {String} newname - new name of the user
+ * @param {String} newpass - new password of the user
+ *
+ * @returns {Promise} Promise representing the updated user
+ */
 async function updateUser(id, newname, newpass) {
   if (!newname && !newpass) {
     return { status: 400, data: { error: 'You must insert data to update' } };
@@ -162,7 +145,7 @@ async function updateUser(id, newname, newpass) {
   if (!newname) {
     const errors = validatePassword(newpass);
 
-    if (errors.length > 0) {
+    if (errors) {
       return { status: 400, data: errors };
     }
     updatedUser = await updatePassword(id, newpass);
@@ -171,10 +154,10 @@ async function updateUser(id, newname, newpass) {
   if (!newpass) {
     const errors = validateName(newname);
 
-    if (errors.length > 0) {
+    if (errors) {
       return { status: 400, data: errors };
     }
-    updatedUser = await updateName(id, newname);
+    updatedUser = await updateName(id, xss(newname));
   }
 
   const data = {
@@ -187,9 +170,137 @@ async function updateUser(id, newname, newpass) {
   return { status: 200, data };
 }
 
+/**
+ * Uploads photo to cloudinary and saves url to database
+ *
+ * @param {Int} id - id of user, owner of photo
+ * @param {String} - path to image
+ *
+ * @returns {Promise} Promise representing the updated user
+ */
+async function uploadPhoto(id, file) {
+  if (!file) {
+    return { status: 400, data: { error: 'Couldn\'t find file' } };
+  }
+  const { path } = file;
+
+  if (!path) {
+    return { status: 400, data: { error: 'Can\'t read file path' } };
+  }
+
+  let upload = null;
+
+  try {
+    upload = await cloudinary.v2.uploader.upload(path);
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+
+  const { secure_url } = upload; // eslint-disable-line
+
+  const data = await updatePhoto(id, secure_url);
+
+  return { status: 200, data };
+}
+
+/**
+ * Get page of books read by user
+ *
+ * @param {Int} id - user's id
+ * @param {Int} offset - page offset
+ *
+ * @returns {Promise} Promise representing the page of books
+ */
+async function getReadBooks(userId, offset, limit) {
+  const errors = [];
+
+  if (!validateId(offset) && offset > 0) {
+    errors.push({ error: 'Page offset is invalid' });
+  }
+
+  if (errors.length > 0) {
+    return { status: 400, data: errors };
+  }
+
+  const data = await getAllReadBy(userId, offset, limit);
+
+  return { status: 200, data };
+}
+
+/**
+ * Add a book to a list of books a user has read
+ *
+ * @param {Int} userid - user's id
+ * @param {Int} bookid - book's id
+ * @param {Int} grade - grade the user gives the book, Integer 1-5 or empty
+ * @param {String} comments - user's comments on the book, can be empty
+ *
+ * @returns {Promise} Promise representing the book that was read
+ */
+async function addReadBook(userid, bookid, grade = null, comments = '') {
+  const errors = [];
+
+  if (!validateId(bookid)) {
+    errors.push({ error: 'Invalid book ID' });
+  } else {
+    const bookexists = await getBookById(bookid);
+    if (!bookexists) {
+      errors.push({ error: 'Book does not exist' });
+    } else {
+      const userHasReadBook = await getBookReadBy(userid, bookid);
+      if (userHasReadBook.length > 0) {
+        errors.push({ error: 'User has already read book' });
+      }
+    }
+  }
+
+  if (!validateGrade(grade) && grade) {
+    errors.push({ error: 'Grade must be a integer on the range 1 - 5' });
+  }
+
+  if (errors.length > 0) {
+    return { status: 400, data: errors };
+  }
+
+  const data = await addBookReadBy(userid, bookid, grade, xss(comments));
+  return { status: 200, data };
+}
+
+/**
+ * Deletes a book from users reading list
+ *
+ * @param {Int} userId - user's id
+ * @param {Int} bookId - book's id
+ *
+ * @returns {Promise} Promise representing the updated reading list
+ */
+async function removeReadBy(userId, bookId) {
+  const errors = [];
+
+  if (!validateId(bookId)) {
+    errors.push({ error: 'Invalid book ID' });
+  }
+
+  if (errors.length > 0) {
+    return { status: 400, data: errors };
+  }
+
+  const data = await deleteReadBy(bookId, userId);
+
+  if (data.length > 0) {
+    return { status: 204 };
+  }
+  return { status: 400, data: { error: 'User has not read this book' } };
+}
+
 module.exports = {
   getAll,
   getOneById,
   register,
   updateUser,
+  uploadPhoto,
+  getReadBooks,
+  addReadBook,
+  removeReadBy,
 };

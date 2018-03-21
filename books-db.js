@@ -20,13 +20,30 @@ async function getCategory(category) {
   }
 }
 
-async function getCategories() {
+async function addNewCategory(category) {
   const client = new Client({ connectionString });
-  const query = 'SELECT category FROM categories;';
+  const query = 'INSERT INTO groups(category) VALUES ($1) RETURNING *';
   await client.connect();
 
   try {
-    const data = client.query(query);
+    const data = await client.query(query, [category]);
+    const { rows } = data;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function getAllCategories() {
+  const client = new Client({ connectionString });
+  const query = 'SELECT category FROM groups';
+  await client.connect();
+
+  try {
+    const data = await client.query(query);
     const { rows } = data;
     return rows;
   } catch (err) {
@@ -90,12 +107,12 @@ async function saveBook(data) {
   }
 }
 
-async function search(string,offset) {
+async function search(string, offset, limit = 10) {
   const client = new Client({ connectionString });
-  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1)) offset ($2) limit 10';
+  const query = 'SELECT * FROM books WHERE (to_tsvector(title) @@ to_tsquery($1)) OR (to_tsvector(description) @@ to_tsquery($1)) offset ($2) limit $3';
   await client.connect();
   try {
-    const data = await client.query(query, [string,offset]);
+    const data = await client.query(query, [string, offset, limit]);
     const { rows } = data;
     return rows;
   } catch (err) {
@@ -104,8 +121,6 @@ async function search(string,offset) {
   } finally {
     await client.end();
   }
-
-
 }
 
 async function updateBooks(id, data ) {
@@ -201,12 +216,80 @@ async function fetchBooks(offset) {
   await client.connect();
 
   try {
-    const result = await client.query('SELECT * FROM books LIMIT 10 offset ($1)',[offset]);
+    const result = await client.query('SELECT * FROM books LIMIT 10 offset ($1)', [offset]);
 
     const { rows } = result;
     return rows;
   } catch (err) {
     console.error('Error selecting form data');
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function addBookReadBy(userid, bookid, grade, comments) {
+  const client = new Client({ connectionString });
+  const query = 'INSERT INTO readBooks (userid, bookid, grade, comments) VALUES ($1, $2, $3, $4) RETURNING *';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [userid, bookid, grade, comments]);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function getBookReadBy(userid, bookid) {
+  const client = new Client({ connectionString });
+  const query = 'SELECT * FROM books WHERE id = (SELECT bookId FROM readBooks WHERE bookId = $1 AND userId = $2)';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [bookid, userid]);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function getAllReadBy(id, offset = 0, limit = 10) {
+  const client = new Client({ connectionString });
+  const query = 'SELECT * FROM books WHERE id IN (SELECT bookId FROM readBooks WHERE userId = $1) LIMIT $2 OFFSET $3';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [id, limit, offset]);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function deleteReadBy(readId, userId) {
+  const client = new Client({ connectionString });
+  const query = 'DELETE FROM readBooks WHERE bookId = $1 AND userId = $2 RETURNING *';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [readId, userId]);
+    const { rows } = result;
+    return rows;
+  } catch (err) {
+    console.error(err);
     throw err;
   } finally {
     await client.end();
@@ -238,9 +321,14 @@ module.exports = {
   getBookByTitle,
   getBookByIsBn13,
   getCategory,
-  getCategories,
+  getAllCategories,
   addCategory,
   getBookById,
   search,
+  addBookReadBy,
+  getBookReadBy,
+  getAllReadBy,
+  deleteReadBy,
+  addNewCategory,
   updateBooks,
 };
