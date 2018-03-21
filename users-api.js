@@ -21,6 +21,7 @@ const {
   addBookReadBy,
   getBookReadBy,
   getBookById,
+  getAllReadBy,
 } = require('./books-db');
 
 const {
@@ -197,6 +198,19 @@ async function uploadPhoto(id, file) {
 }
 
 /**
+ * Get page of books read by user
+ *
+ * @param {Int} id - user's id
+ *
+ * @returns {Promise} Promise representing the list of books
+ */
+async function getReadBooks(userid) {
+  const data = await getAllReadBy(userid);
+
+  return { status: 200, data };
+}
+
+/**
  * Add a book to a list of books a user has read
  *
  * @param {Int} userid - user's id
@@ -241,5 +255,6 @@ module.exports = {
   register,
   updateUser,
   uploadPhoto,
+  getReadBooks,
   addReadBook,
 };

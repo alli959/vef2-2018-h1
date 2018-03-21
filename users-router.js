@@ -6,6 +6,7 @@ const {
   updateUser,
   uploadPhoto,
   addReadBook,
+  getReadBooks,
 } = require('./users-api');
 const { requireAuthentication } = require('./authentication');
 
@@ -45,8 +46,11 @@ router.post('/me/profile', requireAuthentication, uploads.single('image'), async
   return res.status(status).json(data);
 });
 
-router.get('/me/read', requireAuthentication, (req, res) => {
+router.get('/me/read', requireAuthentication, async (req, res) => {
+  const { user: { id } } = req;
 
+  const { status, data } = await getReadBooks(id);
+  return res.status(status).json(data);
 });
 
 router.post('/me/read', requireAuthentication, async (req, res) => {

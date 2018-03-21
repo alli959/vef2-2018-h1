@@ -210,6 +210,24 @@ async function getBookReadBy(userid, bookid) {
   }
 }
 
+async function getAllReadBy(id, offset = 0) {
+  const client = new Client({ connectionString });
+  const query = 'SELECT * FROM books WHERE id IN (SELECT bookId FROM readBooks WHERE userId = $1) LIMIT 10 OFFSET $2';
+  await client.connect();
+
+  try {
+    const result = await client.query(query, [id, offset]);
+    const { rows } = result;
+    console.info(rows);
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
 async function runQuery(query) {
   const client = new Client({ connectionString });
 
@@ -241,4 +259,5 @@ module.exports = {
   search,
   addBookReadBy,
   getBookReadBy,
+  getAllReadBy,
 };
