@@ -125,11 +125,11 @@ async function updateBooks(id, data ) {
   const query = 'UPDATE books SET (title,isbn13,author,description,category,isbn10,published,pagecount,language) = ($2, $3, $4, $5, $6, $7, $8, $9, $10) WHERE id = $1';
 
   const values = [
-    title, isbn13, author, description, category,
+    id, title, isbn13, author, description, category,
     isbn10, published, pagecount, language,
   ];
   try {
-    const result = await client.query(query, [values]);
+    const result = await client.query(query, values);
     const { rows } = result;
     return rows;
   } catch (err) {
@@ -241,4 +241,5 @@ module.exports = {
   addCategory,
   getBookById,
   search,
+  updateBooks,
 };

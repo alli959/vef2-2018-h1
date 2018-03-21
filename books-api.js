@@ -13,12 +13,6 @@ const validator = require('validator');
 const xss = require('xss');
 
 
- function helper(object){
-  if(object === undefined){
-    return false;
-  }
-  return true;
-}
 
 //***********************/
 //********TODO validator********** */
@@ -67,31 +61,31 @@ async function changeBook (id, data) {
 
 
  
-  if(helper(data.title)){
+  if (data.title) {
     book[0].title = data.title;
   }
-  if(helper(data.isbn13)){
+  if (data.isbn13) {
     book[0].isbn13 = data.isbn13;
   }
-  if(helper(data.author)){
+  if (data.author) {
     book[0].author = data.author;
   }
-  if(helper(data.description)){
+  if (data.description) {
     book[0].description = data.description;
   }
-  if(helper(data.category)){
+  if (data.category) {
     book[0].category = data.category;
   }
-  if(helper(data.isbn10)){
+  if (data.isbn10) {
     book[0].isbn10 = data.isbn10;
   }
-  if(helper(data.published)){
+  if (data.published) {
     book[0].published = data.published;
   }
-  if(helper(data.pagecount)){
+  if (data.pagecount) {
     book[0].pagecount = data.pagecount;
   }
-  if(helper(data.language)){
+  if (data.language) {
     book[0].language = data.language;
   }
   
