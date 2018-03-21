@@ -1,5 +1,6 @@
 const xss = require('xss');
 const cloudinary = require('cloudinary');
+const validator = require('validator');
 const {
   getAllUsers,
   findUserById,
@@ -9,11 +10,18 @@ const {
   updatePhoto,
 } = require('./users-db');
 const {
+  validateId,
   validatePassword,
   validateName,
   validateUsername,
   validatePhoto,
+  validateGrade,
 } = require('./validation');
+const {
+  addBookReadBy,
+  getBookReadBy,
+  getBookById,
+} = require('./books-db');
 
 const {
   CLOUDINARY_CLOUD,
@@ -188,6 +196,44 @@ async function uploadPhoto(id, file) {
   return { status: 200, data };
 }
 
+/**
+ * Add a book to a list of books a user has read
+ *
+ * @param {Int} userid - user's id
+ * @param {Int} bookid - book's id
+ * @param {Int} grade - grade the user gives the book, Integer 1-5 or empty
+ * @param {String} comments - user's comments on the book, can be empty
+ *
+ * @returns {Promise} Promise representing the book that was read
+ */
+async function addReadBook(userid, bookid, grade = null, comments = '') {
+  const errors = [];
+
+  if (!validateId(bookid)) {
+    errors.push({ error: 'Invalid book ID' });
+  } else {
+    const bookexists = await getBookById(bookid);
+    if (!bookexists) {
+      errors.push({ error: 'Book does not exist' });
+    } else {
+      const userHasReadBook = await getBookReadBy(userid, bookid);
+      if (userHasReadBook.length > 0) {
+        errors.push({ error: 'User has already read book' });
+      }
+    }
+  }
+
+  if (!validateGrade(grade) && grade) {
+    errors.push({ error: 'Grade must be a integer on the range 1 - 5' });
+  }
+
+  if (errors.length > 0) {
+    return { status: 400, data: errors };
+  }
+
+  const data = await addBookReadBy(userid, bookid, grade, xss(comments));
+  return { status: 200, data };
+}
 
 module.exports = {
   getAll,
@@ -195,4 +241,5 @@ module.exports = {
   register,
   updateUser,
   uploadPhoto,
+  addReadBook,
 };

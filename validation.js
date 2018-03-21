@@ -1,16 +1,17 @@
 const validator = require('validator');
 const { findByUsername } = require('./users-db');
+const { getBookById } = require('./books-db');
 
 /**
  * Validation for ID
  *
  * @param {int} id
  *
- * @returns {boolean} true if id is a Integer
+ * @returns {Boolean} True if id is a Integer
  */
 function validateId(id) {
-  if (!validator.isInt(String(id))) {
-    return { error: 'ID must be an integer' };
+  if (validator.isInt(String(id), { min: 1, max: 2147483647 })) {
+    return true;
   }
   return false;
 }
@@ -75,10 +76,45 @@ function validatePhoto(photo) {
   return false;
 }
 
+/**
+ * Validation of grade
+ *
+ * @param {Int} grade - must be a Integer 1-5
+ *
+ * @returns {Boolean} True if grade is valid
+ */
+function validateGrade(grade) {
+  if (validator.isInt((String(grade)), { min: 1, max: 5 })) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Validation of a book by id
+ *
+ * @param {Int} id - id of the book
+ *
+ * @returns {Object} - Error object if the id is invalid
+ */
+async function validateBookById(id) {
+  if (!validator.isInt(String(id), { min: 1, max: 2147483647 })) {
+    return { error: 'Invalid book ID' };
+  }
+  const bookexists = await getBookById(id);
+  if (!bookexists) {
+    return { error: 'Book does not exist' };
+  }
+  return false;
+}
+
+
 module.exports = {
   validateId,
   validatePassword,
   validateName,
   validateUsername,
   validatePhoto,
+  validateGrade,
+  validateBookById,
 };
