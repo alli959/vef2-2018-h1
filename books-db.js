@@ -20,13 +20,30 @@ async function getCategory(category) {
   }
 }
 
-async function getCategories() {
+async function addNewCategory(category) {
   const client = new Client({ connectionString });
-  const query = 'SELECT category FROM categories;';
+  const query = 'INSERT INTO groups(category) VALUES ($1) RETURNING *';
   await client.connect();
 
   try {
-    const data = client.query(query);
+    const data = await client.query(query, [category]);
+    const { rows } = data;
+    return rows;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    await client.end();
+  }
+}
+
+async function getAllCategories() {
+  const client = new Client({ connectionString });
+  const query = 'SELECT category FROM groups';
+  await client.connect();
+
+  try {
+    const data = await client.query(query);
     const { rows } = data;
     return rows;
   } catch (err) {
@@ -269,7 +286,7 @@ module.exports = {
   getBookByTitle,
   getBookByIsBn13,
   getCategory,
-  getCategories,
+  getAllCategories,
   addCategory,
   getBookById,
   search,
@@ -277,4 +294,5 @@ module.exports = {
   getBookReadBy,
   getAllReadBy,
   deleteReadBy,
+  addNewCategory,
 };

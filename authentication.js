@@ -34,8 +34,11 @@ function requireAuthentication(req, res, next) {
       }
 
       if (!user) {
-        const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
-        return res.status(401).json({ error });
+        if (info) {
+          const error = info.name === 'TokenExpiredError' ? 'expired token' : 'invalid token';
+          return res.status(401).json({ error });
+        }
+        return res.status(401).json({ error: 'Missing user data ' });
       }
 
       req.user = user;

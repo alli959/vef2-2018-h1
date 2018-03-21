@@ -3,6 +3,7 @@ const express = require('express');
 const books = require('./books-router');
 const users = require('./users-router');
 const { register } = require('./users-api');
+const { getCategories, addCategory } = require('./books-api');
 
 const { passport, login } = require('./authentication');
 
@@ -43,12 +44,15 @@ app.post('/login', async (req, res) => {
   return res.status(status).json(data);
 });
 
-app.get('/categories', (req, res) => {
-
+app.get('/categories', async (req, res) => {
+  const { status, data } = await getCategories();
+  return res.status(status).json(data);
 });
 
-app.post('/categories', (req, res) => {
-
+app.post('/categories', async (req, res) => {
+  const { category } = req.body;
+  const { status, data } = await addCategory(category);
+  return res.status(status).json(data);
 });
 
 function notFoundHandler(req, res, next) { // eslint-disable-line

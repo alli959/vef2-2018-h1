@@ -3,8 +3,10 @@ const {
   getBookByTitle,
   getBookByIsBn13,
   getCategory,
+  getAllCategories,
   fetchBooks,
   getBookById,
+  addNewCategory,
   search,
 } = require('./books-db');
 
@@ -149,9 +151,39 @@ async function addBook({
   return ({ status: 200, output: output[0] });
 }
 
+/**
+ * Get all categories
+ *
+ * @returns {Promise} Promise representing a list of categories
+ */
+async function getCategories() {
+  const data = await getAllCategories();
+  return { status: 200, data };
+}
+
+/**
+ * Add a category
+ *
+ * @returns {Promise} Promise representing a list of categories
+ */
+async function addCategory(category) {
+  if (category) {
+    const categoryExists = await getCategory(category);
+    console.info(categoryExists);
+    if (categoryExists.length > 0) {
+      return { status: 400, data: { error: 'Category already exists' } };
+    }
+    const data = await addNewCategory(category);
+    return { status: 200, data };
+  }
+  return { status: 400, data: { error: 'Include a category to add' } };
+}
+
 module.exports = {
   addBook,
   getBooks,
   getBooksById,
   searchBooks,
+  getCategories,
+  addCategory,
 };

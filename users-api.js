@@ -53,6 +53,7 @@ async function getAll(offset, limit) {
   }
 
   const data = await getAllUsers(offset, limit);
+  console.info(data);
 
   return { status: 200, data };
 }
