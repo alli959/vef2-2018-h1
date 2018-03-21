@@ -45,7 +45,7 @@ async function validateBook({
       errors.push({ error: 'This title is already registered' });
     }
   }
-  
+
 
   if (!validator.isISBN(isbn13, [13])) {
     errors.push({ error: 'ISBN13 must be on the right format' });
@@ -118,7 +118,7 @@ async function validateBookChange({
       errors.push({ error: 'Category does not exist' });
     }
   }
-  
+
   if (isbn10) {
     if (!validator.isISBN(isbn10, [10]) && isbn10.length > 0) {
       errors.push({ error: 'ISBN10 must be on the right format' });
@@ -144,36 +144,48 @@ async function validateBookChange({
   return errors;
 }
 
-// ***********************/
-// ********TODO validator********** */
-// ********************* */
+/**
+ * 
+ * @param {Int} offset
+ * 
+ * @returns {promise}
+ */
 async function getBooks(offset) {
   const data = await fetchBooks(offset);
   return data;
 }
 
-// ***********************/
-// ********TODO validator********** */
-// ********************* */
+/**
+ *
+ * @param {String} string 
+ * @param {Int} offset
+ * 
+ *@returns {promise} 
+ */
 async function searchBooks(string, offset) {
   const data = await search(string, offset);
   return data;
 }
 
 
-// ***********************/
-// ********TODO validator********** */
-// ********************* */
+/**
+ *
+ * @param {Int} id
+ *
+ * @returns {promise} 
+ */
 async function getBooksById(id) {
   const data = await getBookById(id);
   return data;
 }
 
-// ***********************/
-// ********TODO validator********** */
-// ********************* */
-
-
+/**
+ *
+ * @param {Int} id
+ * @param {Object} data
+ *
+ * @returns {promise}
+ */
 async function changeBook(id, data = {}) {
   const errors = await validateBookChange(data);
 
@@ -231,6 +243,8 @@ async function changeBook(id, data = {}) {
  * @param {String} book.published - Where the book was published
  * @param {Int}    book.pagecount - Number of pages in the book
  * @param {String} book.language - Two-character string of the book's language
+ *
+ * @returns {Promise}
  */
 async function addBook({
   title,
